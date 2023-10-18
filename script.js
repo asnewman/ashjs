@@ -1,22 +1,24 @@
-import { render } from "./modules/ash";
+import { Ash } from "./modules/ash.js";
 
-const items = []
+const ash = new Ash();
 
-const exampleFunc = () => {
-  items.push(new Date())
+const items = [];
 
-  return [{
-    type: "list",
-    id: "log-area",
-    items: items
-  }]
-}
+const addNewListItem = () => {
+  items.push(new Date());
+
+  ash.update({
+    "log-area": {
+      items,
+    },
+  });
+};
 
 const data = [
   {
     type: "title",
     content: "Dailies",
-    subtitle: "Track your daily challenges."
+    subtitle: "Track your daily challenges.",
   },
   {
     type: "text",
@@ -25,34 +27,13 @@ const data = [
   {
     type: "button",
     content: "New log",
-    onclick: () => {
-      const newData = exampleFunc()
-    }
+    onclick: addNewListItem,
   },
   {
     type: "list",
     id: "log-area",
-    items: items
-  }
+    items: items,
+  },
 ];
 
-const typeToHtmlContainer = {
-  "title": "div",
-  "text": "p",
-  "button": "button",
-  "list": "ul"
-}
-
-function replacer(data, replacementData) {
-  return data.map((item) => {
-    for (const replacementItem of replacementData) {
-      if (item.id && item.id === replacementItem.id) {
-        return replacementItem
-      }
-    }
-    return item
-  })
-}
-
-console.log("attempting to render")
-render(data)
+ash.setData(data).render();

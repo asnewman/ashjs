@@ -1,15 +1,17 @@
 # ashjs
 
-To install dependencies:
+I am building the best frontend JavaScript framework. It is so good that I've named it after myself!
 
-```bash
-bun install
-```
+## Principles
 
-To run:
+- Encourage vanilla JavaScript, there are no escape hatches because you are not trapped
+- Allow for frontend data structures to be passed from the backend
+- Support just enough to build simple UIs. If you can't build it with ash.js, it's your designer/PM's fault.
 
-```bash
-bun run index.js
-```
+## Short term goals
 
-This project was created using `bun init` in bun v1.0.6. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- Built in routing
+- Enable JavaScript function to be sent from the backend
+- Enable backend function calls from the frontend
+- Build a small project with ash.js to prove its viability
+- Build out documentation

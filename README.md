@@ -7,6 +7,7 @@ I am building the best frontend JavaScript framework. It is so good that I've na
 - Encourage vanilla JavaScript, there are no escape hatches because you are not trapped
 - Allow for frontend data structures to be passed from the backend
 - Support just enough to build simple UIs. If you can't build it with ash.js, it's your designer/PM's fault.
+- The framework is one file, no dependencies
 
 ## Short term goals
 

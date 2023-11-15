@@ -1,4 +1,4 @@
-import { Ash } from "./modules/ash.js";
+import { Ash } from "../modules/ash.js";
 
 const ash = new Ash();
 

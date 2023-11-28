@@ -26,7 +26,8 @@ const generateTil = (til, id) => ({
     { p: til, class: "text-2xl" },
     {
       div: [
-        { span: "By Ash" },
+        { p: "- Ash", class: "italic text-slate-500" },
+        ,
         {
           a: "Comments",
           class: "text-blue-700",
@@ -41,7 +42,6 @@ const generateTil = (til, id) => ({
 });
 
 const generateComment = (comment) => {
-  console.log(comment);
   return {
     div: [
       { p: comment.text },
@@ -82,24 +82,36 @@ const routes = {
               },
               {
                 div: [
+                  { p: "Write a comment", class: "p-1 text-lg" },
+                  {
+                    input: "",
+                    id: "by-box",
+                    type: "text",
+                    placeholder: "Your name",
+                    class:
+                      "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm mb-2",
+                  },
                   {
                     textarea: "",
                     id: "comment-box",
                     class:
                       "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm",
                     rows: 4,
-                    placeholder: "Write a comment...",
+                    placeholder: "Type something...",
                   },
+
                   {
                     button: "Post",
                     onclick: () => {
-                      const comment = document.getElementById("comment-box");
+                      const comment =
+                        document.getElementById("comment-box").value;
                       comments.push({
-                        by: "Ash",
+                        by:
+                          document.getElementById("by-box").value ||
+                          "Anonymous",
                         text: comment,
                         datetime: Date.now(),
                       });
-                      console.log(comments);
                       render();
                     },
                     class:

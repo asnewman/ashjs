@@ -36,22 +36,17 @@ export class Ash {
 
     this.routes = routes;
 
-    const { currentPath, paramsObject } = getUrlInformation();
-    console.log({ currentPath, paramsObject });
-
-    this.data = this.routes[currentPath](this.render, paramsObject);
     this.render();
 
     window.onhashchange = () => {
-      const { currentPath, paramsObject } = getUrlInformation();
-      console.log({ currentPath, paramsObject });
-      this.data = this.routes[currentPath](this.render, paramsObject);
       this.render();
     };
   }
 
   render() {
-    console.log(this.data);
+    const { currentPath, paramsObject } = getUrlInformation();
+    this.data = this.routes[currentPath](this.render, paramsObject);
+
     document.getElementById("ashjs").innerHTML = "";
 
     this.data.forEach((element) => {

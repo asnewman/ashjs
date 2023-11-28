@@ -10,11 +10,13 @@ const tils = [
 
 const comments = [
   {
+    parent: "1",
     by: "Ash",
     text: "Wow this is a great fact",
     datetime: 1701134030,
   },
   {
+    parent: "1",
     by: "Bob",
     text: "I never knew this",
     datetime: 1701134031,
@@ -55,13 +57,24 @@ const routes = {
   "": () => {
     return [
       {
-        h1: "TIL",
-        class: "text-6xl text-center",
+        div: [
+          {
+            h1: "TIL",
+            class: "text-6xl text-center",
+          },
+          ...tils.map((til, index) => generateTil(til, index)),
+        ],
+        class: "bg-indigo-50 h-screen",
       },
-      ...tils.map((til, index) => generateTil(til, index)),
     ];
   },
   "/post": (render, { id }) => {
+    const markupForComments = [
+      ...comments
+        .filter((comment) => comment.parent === id)
+        .map((comment) => generateComment(comment)),
+    ];
+
     return [
       {
         div: [
@@ -77,7 +90,9 @@ const routes = {
                 class: "text-2xl",
               },
               {
-                div: [...comments.map((comment) => generateComment(comment))],
+                div: markupForComments.length
+                  ? markupForComments
+                  : "No comments yet...",
                 class: "my-5",
               },
               {

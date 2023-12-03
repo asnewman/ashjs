@@ -40,7 +40,7 @@ const generateTil = (til, id) => ({
       class: "flex justify-between",
     },
   ],
-  class: "mt-10 mx-auto max-w-[50rem]",
+  class: " mt-2 mb-8 mx-auto max-w-[50rem]",
 });
 
 const generateComment = (comment) => {
@@ -53,8 +53,10 @@ const generateComment = (comment) => {
   };
 };
 
+let showNewTilInput = false;
+
 const routes = {
-  "": () => {
+  "": (render) => {
     return [
       {
         div: [
@@ -62,6 +64,59 @@ const routes = {
             h1: "TIL",
             class: "text-6xl text-center",
           },
+          {
+            p: "Submit new TIL",
+            class: "text-md text-blue-700 text-center mt-2 cursor-pointer",
+            onclick: () => {
+              showNewTilInput = true;
+              render();
+            },
+          },
+          showNewTilInput
+            ? {
+                div: [
+                  {
+                    p: "If your TIL gets through the moderation process, it will be published within 24 hours.",
+                    class: "mb-2 text-center",
+                  },
+                  {
+                    input: "",
+                    id: "by-box",
+                    type: "text",
+                    placeholder: "Your name",
+                    class:
+                      "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm mb-2",
+                  },
+                  {
+                    textarea: "",
+                    id: "til-box",
+                    class:
+                      "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm",
+                    rows: 4,
+                    value: "TIL that ",
+                  },
+                  {
+                    button: "Post",
+                    onclick: () => {
+                      const comment =
+                        document.getElementById("comment-box").value;
+                      comments.push({
+                        parent: id,
+                        by:
+                          document.getElementById("by-box").value ||
+                          "Anonymous",
+                        text: comment,
+                        datetime: Date.now(),
+                      });
+                      render();
+                    },
+                    class:
+                      "mt-2 inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500",
+                  },
+                ],
+                class: "max-w-[50rem] mx-auto my-3",
+              }
+            : { p: "" },
           ...tils.map((til, index) => generateTil(til, index)),
         ],
         class: "bg-indigo-50 h-screen",
@@ -114,13 +169,13 @@ const routes = {
                     rows: 4,
                     placeholder: "Type something...",
                   },
-
                   {
                     button: "Post",
                     onclick: () => {
                       const comment =
                         document.getElementById("comment-box").value;
                       comments.push({
+                        parent: id,
                         by:
                           document.getElementById("by-box").value ||
                           "Anonymous",

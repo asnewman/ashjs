@@ -1,12 +1,17 @@
 import { Ash } from "../modules/ash.js";
+const { createClient } = supabase;
 
-const tils = [
-  "TIL that honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible.",
-  "TIL that the shortest war in history was between Britain and Zanzibar on August 27, 1896. Zanzibar surrendered after just 38 minutes.",
-  "TIL that octopuses have three hearts. Two pump blood to the gills, while the third pumps it to the rest of the body.",
-  "TIL that Finland offers a 'baby box' to all expectant mothers. The box contains baby essentials and can also be used as a bed, contributing to Finland's low infant mortality rates.",
-  "TIL that the inventor of the Frisbee was cremated and made into Frisbees after he died. This was in accordance with his wishes.",
-];
+const s = createClient('https://lhjukjfrbjipxrpezkuy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoanVramZyYmppcHhycGV6a3V5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI3NjE1NzcsImV4cCI6MjAxODMzNzU3N30.9txcN8AsNBCvQm7naJ4sPQfDO7V7EqOnHoS1mUhWV-E')
+
+// const tils = [
+//   "TIL that honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible.",
+//   "TIL that the shortest war in history was between Britain and Zanzibar on August 27, 1896. Zanzibar surrendered after just 38 minutes.",
+//   "TIL that octopuses have three hearts. Two pump blood to the gills, while the third pumps it to the rest of the body.",
+//   "TIL that Finland offers a 'baby box' to all expectant mothers. The box contains baby essentials and can also be used as a bed, contributing to Finland's low infant mortality rates.",
+//   "TIL that the inventor of the Frisbee was cremated and made into Frisbees after he died. This was in accordance with his wishes.",
+// ];
+
+
 
 const comments = [
   {
@@ -44,13 +49,14 @@ const routes = {
 
 let showNewTilInput = false;
 
-function indexRoute(render) {
+async function indexRoute(render) {
+  const tils = await s.from("tils").select("*")
   return [
     {
       div: [
         {
           h1: "TIL",
-          class: "text-6xl text-center",
+          class: "text-6xl text-center mt-2",
         },
         {
           p: "Submit new TIL",
@@ -85,16 +91,17 @@ function indexRoute(render) {
                 },
                 {
                   button: "Post",
-                  onclick: () => {
-                    const comment =
-                      document.getElementById("comment-box").value;
-                    comments.push({
-                      parent: id,
-                      by:
-                        document.getElementById("by-box").value || "Anonymous",
-                      text: comment,
-                      datetime: Date.now(),
-                    });
+                  onclick: async () => {
+                    const text =
+                      document.getElementById("til-box").value;
+                    const by = document.getElementById("by-box").value || "Anonymous"
+                    const {error} = await s.from("tils").insert({text, by})
+                    if (error) {
+                      alert(error.message)
+                    }
+                    else {
+                      showNewTilInput = false;
+                    }
                     render();
                   },
                   class:
@@ -104,27 +111,26 @@ function indexRoute(render) {
               class: "max-w-[50rem] mx-auto my-3",
             }
           : { p: "" },
-        ...tils.map((til, index) => generateTil(til, index)),
+        ...tils.data.map((til, index) => generateTil(til)),
       ],
-      class: "bg-indigo-50 h-screen",
     },
   ];
 }
 
-const generateTil = (til, id) => {
-  const commentCount = comments.filter((c) => c.parent === `${id}`).length;
+const generateTil = (til) => {
+  const commentCount = comments.filter((c) => c.parent === `${til.id}`).length;
 
   return {
     div: [
-      { p: til, class: "text-2xl mb-2" },
+      { p: til.text, class: "text-2xl mb-2" },
       {
         div: [
-          { p: "- Ash", class: "italic text-slate-500" },
+          { p: `- ${til.by}`, class: "italic text-slate-500" },
           ,
           {
             a: `Comments (${commentCount})`,
             class: "text-blue-700",
-            href: `/til/index.html#/post?id=${id}`,
+            href: `/til/index.html#/post?id=${til.id}`,
           },
           { span: "3 hours ago" },
         ],
@@ -139,9 +145,11 @@ const generateTil = (til, id) => {
  * Post marker
  */
 
-let hidePostComment = false;
+let postsToHideCommentInput = new Set();
 
-function postRoute(render, { id }) {
+async function postRoute(render, { id }) {
+  const tils = await s.from("tils").select("*")
+
   const markupForComments = [
     ...comments
       .filter((comment) => comment.parent === id)
@@ -154,12 +162,12 @@ function postRoute(render, { id }) {
         {
           a: "TIL",
           class: "text-6xl text-center block",
-          href: `/til/index.html`,
+          href: `/til/index.html#`,
         },
         {
           div: [
             {
-              p: tils[id],
+              p: tils.data.find(t => `${t.id}` === id).text,
               class: "text-2xl",
             },
             {
@@ -189,17 +197,18 @@ function postRoute(render, { id }) {
                 },
                 {
                   button: "Post",
-                  onclick: () => {
+                  onclick: async () => {
                     const comment =
                       document.getElementById("comment-box").value;
-                    comments.push({
-                      parent: id,
-                      by:
-                        document.getElementById("by-box").value || "Anonymous",
-                      text: comment,
-                      datetime: Date.now(),
-                    });
-                    hidePostComment = true;
+                    const by = document.getElementById("by-box").value || "Anonymous"
+                    debugger;
+                    const { error } = await s.from("comments").insert({parent: id, comment, by })
+                    if (error) {
+                      alert(error.message)
+                    }
+                    else {
+                      postsToHideCommentInput.add(id);
+                    }
                     render();
                   },
                   class:
@@ -207,13 +216,12 @@ function postRoute(render, { id }) {
                 },
               ],
               id: "post-comment-area",
-              class: `${hidePostComment ? "invisible" : ""}`,
+              class: `${postsToHideCommentInput.has(id) ? "invisible" : ""}`,
             },
           ],
           class: "mt-10 mx-auto max-w-[50rem]",
         },
-      ],
-      class: "bg-indigo-50 h-screen",
+      ]
     },
   ];
 }

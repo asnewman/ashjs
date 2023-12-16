@@ -23,26 +23,6 @@ const comments = [
   },
 ];
 
-const generateTil = (til, id) => ({
-  div: [
-    { p: til, class: "text-2xl" },
-    {
-      div: [
-        { p: "- Ash", class: "italic text-slate-500" },
-        ,
-        {
-          a: "Comments",
-          class: "text-blue-700",
-          href: `/til/index.html#/post?id=${id}`,
-        },
-        { span: "3 hours ago" },
-      ],
-      class: "flex justify-between",
-    },
-  ],
-  class: " mt-2 mb-8 mx-auto max-w-[50rem]",
-});
-
 const generateComment = (comment) => {
   return {
     div: [
@@ -53,150 +33,189 @@ const generateComment = (comment) => {
   };
 };
 
+const routes = {
+  "": indexRoute,
+  "/post": postRoute,
+};
+
+/**
+ * Index marker
+ */
+
 let showNewTilInput = false;
 
-const routes = {
-  "": (render) => {
-    return [
-      {
-        div: [
-          {
-            h1: "TIL",
-            class: "text-6xl text-center",
+function indexRoute(render) {
+  return [
+    {
+      div: [
+        {
+          h1: "TIL",
+          class: "text-6xl text-center",
+        },
+        {
+          p: "Submit new TIL",
+          class: "text-md text-blue-700 text-center mt-2 cursor-pointer",
+          onclick: () => {
+            showNewTilInput = true;
+            render();
           },
-          {
-            p: "Submit new TIL",
-            class: "text-md text-blue-700 text-center mt-2 cursor-pointer",
-            onclick: () => {
-              showNewTilInput = true;
-              render();
-            },
-          },
-          showNewTilInput
-            ? {
-                div: [
-                  {
-                    p: "If your TIL gets through the moderation process, it will be published within 24 hours.",
-                    class: "mb-2 text-center",
+        },
+        showNewTilInput
+          ? {
+              div: [
+                {
+                  p: "If your TIL gets through the moderation process, it will be published within 24 hours.",
+                  class: "mb-2 text-center",
+                },
+                {
+                  input: "",
+                  id: "by-box",
+                  type: "text",
+                  placeholder: "Your name",
+                  class:
+                    "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm mb-2",
+                },
+                {
+                  textarea: "",
+                  id: "til-box",
+                  class:
+                    "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm",
+                  rows: 4,
+                  value: "TIL that ",
+                },
+                {
+                  button: "Post",
+                  onclick: () => {
+                    const comment =
+                      document.getElementById("comment-box").value;
+                    comments.push({
+                      parent: id,
+                      by:
+                        document.getElementById("by-box").value || "Anonymous",
+                      text: comment,
+                      datetime: Date.now(),
+                    });
+                    render();
                   },
-                  {
-                    input: "",
-                    id: "by-box",
-                    type: "text",
-                    placeholder: "Your name",
-                    class:
-                      "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm mb-2",
-                  },
-                  {
-                    textarea: "",
-                    id: "til-box",
-                    class:
-                      "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm",
-                    rows: 4,
-                    value: "TIL that ",
-                  },
-                  {
-                    button: "Post",
-                    onclick: () => {
-                      const comment =
-                        document.getElementById("comment-box").value;
-                      comments.push({
-                        parent: id,
-                        by:
-                          document.getElementById("by-box").value ||
-                          "Anonymous",
-                        text: comment,
-                        datetime: Date.now(),
-                      });
-                      render();
-                    },
-                    class:
-                      "mt-2 inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500",
-                  },
-                ],
-                class: "max-w-[50rem] mx-auto my-3",
-              }
-            : { p: "" },
-          ...tils.map((til, index) => generateTil(til, index)),
-        ],
-        class: "bg-indigo-50 h-screen",
-      },
-    ];
-  },
-  "/post": (render, { id }) => {
-    const markupForComments = [
-      ...comments
-        .filter((comment) => comment.parent === id)
-        .map((comment) => generateComment(comment)),
-    ];
+                  class:
+                    "mt-2 inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500",
+                },
+              ],
+              class: "max-w-[50rem] mx-auto my-3",
+            }
+          : { p: "" },
+        ...tils.map((til, index) => generateTil(til, index)),
+      ],
+      class: "bg-indigo-50 h-screen",
+    },
+  ];
+}
 
-    return [
+const generateTil = (til, id) => {
+  const commentCount = comments.filter((c) => c.parent === `${id}`).length;
+
+  return {
+    div: [
+      { p: til, class: "text-2xl mb-2" },
       {
         div: [
+          { p: "- Ash", class: "italic text-slate-500" },
+          ,
           {
-            a: "TIL",
-            class: "text-6xl text-center block",
-            href: `/til/index.html`,
+            a: `Comments (${commentCount})`,
+            class: "text-blue-700",
+            href: `/til/index.html#/post?id=${id}`,
           },
-          {
-            div: [
-              {
-                p: tils[id],
-                class: "text-2xl",
-              },
-              {
-                div: markupForComments.length
-                  ? markupForComments
-                  : "No comments yet...",
-                class: "my-5",
-              },
-              {
-                div: [
-                  { p: "Write a comment", class: "p-1 text-lg" },
-                  {
-                    input: "",
-                    id: "by-box",
-                    type: "text",
-                    placeholder: "Your name",
-                    class:
-                      "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm mb-2",
-                  },
-                  {
-                    textarea: "",
-                    id: "comment-box",
-                    class:
-                      "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm",
-                    rows: 4,
-                    placeholder: "Type something...",
-                  },
-                  {
-                    button: "Post",
-                    onclick: () => {
-                      const comment =
-                        document.getElementById("comment-box").value;
-                      comments.push({
-                        parent: id,
-                        by:
-                          document.getElementById("by-box").value ||
-                          "Anonymous",
-                        text: comment,
-                        datetime: Date.now(),
-                      });
-                      render();
-                    },
-                    class:
-                      "mt-2 inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500",
-                  },
-                ],
-              },
-            ],
-            class: "mt-10 mx-auto max-w-[50rem]",
-          },
+          { span: "3 hours ago" },
         ],
-        class: "bg-indigo-50 h-screen",
+        class: "flex justify-between",
       },
-    ];
-  },
+    ],
+    class: " mt-2 mb-8 mx-auto max-w-[50rem]",
+  };
 };
+
+/**
+ * Post marker
+ */
+
+let hidePostComment = false;
+
+function postRoute(render, { id }) {
+  const markupForComments = [
+    ...comments
+      .filter((comment) => comment.parent === id)
+      .map((comment) => generateComment(comment)),
+  ];
+
+  return [
+    {
+      div: [
+        {
+          a: "TIL",
+          class: "text-6xl text-center block",
+          href: `/til/index.html`,
+        },
+        {
+          div: [
+            {
+              p: tils[id],
+              class: "text-2xl",
+            },
+            {
+              div: markupForComments.length
+                ? markupForComments
+                : "No comments yet...",
+              class: "my-5",
+            },
+            {
+              div: [
+                { p: "Write a comment", class: "p-1 text-lg" },
+                {
+                  input: "",
+                  id: "by-box",
+                  type: "text",
+                  placeholder: "Your name (optional)",
+                  class:
+                    "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm mb-2",
+                },
+                {
+                  textarea: "",
+                  id: "comment-box",
+                  class:
+                    "p-2 w-full rounded-lg border-gray-200 border-solid border-2 align-top shadow-sm sm:text-sm",
+                  rows: 4,
+                  placeholder: "Type something...",
+                },
+                {
+                  button: "Post",
+                  onclick: () => {
+                    const comment =
+                      document.getElementById("comment-box").value;
+                    comments.push({
+                      parent: id,
+                      by:
+                        document.getElementById("by-box").value || "Anonymous",
+                      text: comment,
+                      datetime: Date.now(),
+                    });
+                    hidePostComment = true;
+                    render();
+                  },
+                  class:
+                    "mt-2 inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500",
+                },
+              ],
+              id: "post-comment-area",
+              class: `${hidePostComment ? "invisible" : ""}`,
+            },
+          ],
+          class: "mt-10 mx-auto max-w-[50rem]",
+        },
+      ],
+      class: "bg-indigo-50 h-screen",
+    },
+  ];
+}
 
 const ash = new Ash(routes);

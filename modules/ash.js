@@ -43,9 +43,9 @@ export class Ash {
     };
   }
 
-  render() {
+  async render() {
     const { currentPath, paramsObject } = getUrlInformation();
-    this.data = this.routes[currentPath](this.render, paramsObject);
+    this.data = await this.routes[currentPath](this.render, paramsObject);
 
     document.getElementById("ashjs").innerHTML = "";
 

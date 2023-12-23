@@ -3,45 +3,20 @@ const { createClient } = supabase;
 
 const s = createClient('https://lhjukjfrbjipxrpezkuy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoanVramZyYmppcHhycGV6a3V5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI3NjE1NzcsImV4cCI6MjAxODMzNzU3N30.9txcN8AsNBCvQm7naJ4sPQfDO7V7EqOnHoS1mUhWV-E')
 
-// const tils = [
-//   "TIL that honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible.",
-//   "TIL that the shortest war in history was between Britain and Zanzibar on August 27, 1896. Zanzibar surrendered after just 38 minutes.",
-//   "TIL that octopuses have three hearts. Two pump blood to the gills, while the third pumps it to the rest of the body.",
-//   "TIL that Finland offers a 'baby box' to all expectant mothers. The box contains baby essentials and can also be used as a bed, contributing to Finland's low infant mortality rates.",
-//   "TIL that the inventor of the Frisbee was cremated and made into Frisbees after he died. This was in accordance with his wishes.",
-// ];
-
-
-
-const comments = [
-  {
-    parent: "1",
-    by: "Ash",
-    text: "Wow this is a great fact",
-    datetime: 1701134030,
-  },
-  {
-    parent: "1",
-    by: "Bob",
-    text: "I never knew this",
-    datetime: 1701134031,
-  },
-];
-
-const generateComment = (comment) => {
-  return {
-    div: [
-      { p: comment.text },
-      { p: `- ${comment.by}`, class: "italic text-slate-500" },
-    ],
-    class: "my-2 rounded-md bg-white p-4",
-  };
-};
-
 const routes = {
   "": indexRoute,
   "/post": postRoute,
 };
+
+const globalStore = {
+  tils: undefined
+}
+
+async function initTils(refresh) {
+  if (!globalStore["tils"] || refresh) {
+    globalStore["tils"] = (await s.from("tils").select("*")).data
+  }
+}
 
 /**
  * Index marker
@@ -50,7 +25,9 @@ const routes = {
 let showNewTilInput = false;
 
 async function indexRoute(render) {
-  const tils = await s.from("tils").select("*")
+  await initTils()
+  const comments = await s.from("comments").select("*")
+
   return [
     {
       div: [
@@ -59,10 +36,10 @@ async function indexRoute(render) {
           class: "text-6xl text-center mt-2",
         },
         {
-          p: "Submit new TIL",
-          class: "text-md text-blue-700 text-center mt-2 cursor-pointer",
+          p: !showNewTilInput ? "Submit new TIL" : "Close",
+          class: "text-md text-center mt-2 cursor-pointer text-cyan-800 font-bold",
           onclick: () => {
-            showNewTilInput = true;
+            showNewTilInput = !showNewTilInput;
             render();
           },
         },
@@ -102,23 +79,28 @@ async function indexRoute(render) {
                     else {
                       showNewTilInput = false;
                     }
+                    await initTils(true)
                     render();
                   },
                   class:
-                    "mt-2 inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500",
+                    "mt-2 inline-block rounded border border-cyan-800 bg-cyan-800 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-cyan-800 focus:outline-none focus:ring active:text-cyan-500",
                 },
               ],
               class: "max-w-[50rem] mx-auto my-3",
             }
           : { p: "" },
-        ...tils.data.map((til, index) => generateTil(til)),
+          {
+            div: "",
+            class: "mb-10"
+          },
+        ...globalStore.tils.map((til, index) => generateTil(til, comments.data)),
       ],
     },
   ];
 }
 
-const generateTil = (til) => {
-  const commentCount = comments.filter((c) => c.parent === `${til.id}`).length;
+const generateTil = (til, comments) => {
+  const commentCount = comments.filter((c) => c.parent_id === til.id).length;
 
   return {
     div: [
@@ -129,9 +111,9 @@ const generateTil = (til) => {
           ,
           {
             a: `Comments (${commentCount})`,
-            class: "text-blue-700",
+            class: "text-cyan-800 font-bold",
             href: `/til/index.html#/post?id=${til.id}`,
-          },
+          },//
           { span: "3 hours ago" },
         ],
         class: "flex justify-between",
@@ -148,11 +130,10 @@ const generateTil = (til) => {
 let postsToHideCommentInput = new Set();
 
 async function postRoute(render, { id }) {
-  const tils = await s.from("tils").select("*")
-
+  const tils = await s.from("tils").select("*").eq("id", parseInt(id))
+  const comments = await s.from("comments").select("*").eq("parent_id", parseInt(id))
   const markupForComments = [
-    ...comments
-      .filter((comment) => comment.parent === id)
+    ...comments.data
       .map((comment) => generateComment(comment)),
   ];
 
@@ -167,7 +148,7 @@ async function postRoute(render, { id }) {
         {
           div: [
             {
-              p: tils.data.find(t => `${t.id}` === id).text,
+              p: tils.data[0].text,
               class: "text-2xl",
             },
             {
@@ -201,8 +182,7 @@ async function postRoute(render, { id }) {
                     const comment =
                       document.getElementById("comment-box").value;
                     const by = document.getElementById("by-box").value || "Anonymous"
-                    debugger;
-                    const { error } = await s.from("comments").insert({parent: id, comment, by })
+                    const { error } = await s.from("comments").insert({parent_id: id, comment, by })
                     if (error) {
                       alert(error.message)
                     }
@@ -212,7 +192,7 @@ async function postRoute(render, { id }) {
                     render();
                   },
                   class:
-                    "mt-2 inline-block rounded border border-indigo-600 bg-indigo-600 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500",
+                    "mt-2 inline-block rounded border border-cyan-800 bg-cyan-800 px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-cyan-800 focus:outline-none focus:ring active:text-cyan-500",
                 },
               ],
               id: "post-comment-area",
@@ -225,5 +205,15 @@ async function postRoute(render, { id }) {
     },
   ];
 }
+
+const generateComment = (comment) => {
+  return {
+    div: [
+      { p: comment.comment },
+      { p: `- ${comment.by}`, class: "italic text-slate-500" },
+    ],
+    class: "my-2 rounded-md bg-white p-4",
+  };
+};
 
 const ash = new Ash(routes);

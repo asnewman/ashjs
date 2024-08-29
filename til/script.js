@@ -1,7 +1,7 @@
 import { Ash } from "../modules/ash.js";
 const { createClient } = supabase;
 
-const s = createClient('https://lhjukjfrbjipxrpezkuy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoanVramZyYmppcHhycGV6a3V5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI3NjE1NzcsImV4cCI6MjAxODMzNzU3N30.9txcN8AsNBCvQm7naJ4sPQfDO7V7EqOnHoS1mUhWV-E')
+const s = createClient('https://.supabase.co', '')
 
 const routes = {
   "": indexRoute,

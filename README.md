@@ -10,7 +10,7 @@ Ash.js is designed to be included directly in your project without the need for 
 ```html
 <head>
     <!-- Include via CDN -->
-    <script src="https://cdn.jsdelivr.net/gh/ash-js/ash.js@main/dist/ash.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@main/index.js"></script>
 </head>
 ```
 

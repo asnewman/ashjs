@@ -1,12 +1,12 @@
 class Ash {
   routes = {};
-  store = {};
+  events = {};
 
-  constructor(routes, store) {
+  constructor(routes, events) {
     this.render = this.render.bind(this);
 
     this.routes = routes;
-    this.store = store;
+    this.events = events;
 
     this.render();
 
@@ -17,7 +17,7 @@ class Ash {
 
   async render(id) {
     const { currentPath, paramsObject } = getUrlInformation();
-    const tree = await this.routes[currentPath](this.render, this.store);
+    const tree = await this.routes[currentPath](emit);
 
     if (id) {
       const newElement = findInTree(tree, id);
@@ -39,6 +39,10 @@ class Ash {
         document.getElementById("ashjs").appendChild(node);
       }
     });
+  }
+
+  emit(event, data) {
+    this.events[event](data);
   }
 
   createNode(element) {
@@ -78,4 +82,4 @@ class Ash {
   }
 }
 
-module.exports = Ash;
+module.exports = { Ash};

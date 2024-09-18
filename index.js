@@ -17,7 +17,7 @@ class Ash {
 
   async render(id) {
     const { currentPath, paramsObject } = getUrlInformation();
-    const tree = await this.routes[currentPath](emit);
+    const tree = await this.routes[currentPath](this.emit);
 
     if (id) {
       const newElement = findInTree(tree, id);

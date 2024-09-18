@@ -4,6 +4,7 @@ class Ash {
 
   constructor(routes, events) {
     this.render = this.render.bind(this);
+    this.emit = this.emit.bind(this);
 
     this.routes = routes;
     this.events = events;
@@ -42,7 +43,8 @@ class Ash {
   }
 
   emit(event, data) {
-    this.events[event](data);
+    console.debug("emit", event, data);
+    this.events[event](data, this.render);
   }
 
   createNode(element) {

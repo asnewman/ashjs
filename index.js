@@ -138,4 +138,4 @@ function findInTree(tree, id) {
   return null;
 }
 
-module.exports = { Ash };
+window.Ash = Ash;

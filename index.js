@@ -138,4 +138,4 @@ function findInTree(tree, id) {
   return null;
 }
 
-export default Ash;
+module.exports = { Ash };

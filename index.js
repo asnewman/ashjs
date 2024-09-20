@@ -1,12 +1,18 @@
 class Ash {
   routes = {};
-  store = {};
+  events = {};
 
-  constructor(routes, store) {
+  constructor(routes, events) {
     this.render = this.render.bind(this);
+    this.emit = this.emit.bind(this);
 
     this.routes = routes;
-    this.store = store;
+    this.events = {
+      ...events,
+      go: (path) => {
+        window.location.hash = `#${path}`;
+      },
+    };
 
     this.render();
 
@@ -17,7 +23,7 @@ class Ash {
 
   async render(id) {
     const { currentPath, paramsObject } = getUrlInformation();
-    const tree = await this.routes[currentPath](this.render, this.store);
+    const tree = await this.routes[currentPath](this.emit);
 
     if (id) {
       const newElement = findInTree(tree, id);
@@ -39,6 +45,11 @@ class Ash {
         document.getElementById("ashjs").appendChild(node);
       }
     });
+  }
+
+  emit(event, data) {
+    console.debug("emit", event, data);
+    this.events[event](data, this.render);
   }
 
   createNode(element) {
@@ -78,4 +89,53 @@ class Ash {
   }
 }
 
-module.exports = Ash;
+/**
+ * ash.js helper functions
+ */
+function extractPath(hash) {
+  // Check if the string is not empty and starts with a hash
+  if (hash && hash.startsWith("#")) {
+    // Split the string at the question mark
+    const parts = hash.split("?");
+
+    // The first part of the array will contain everything before the '?'
+    // Remove the '#' and return the result
+    return parts[0].substring(1);
+  }
+  return ""; // Return an empty string if the conditions are not met
+}
+
+function getUrlInformation() {
+  let hash = window.location.hash;
+  const currentPath = extractPath(hash);
+  let queryString = window.location.hash;
+  let searchParams = new URLSearchParams(
+    queryString.substring(1).replace(currentPath, "")
+  );
+  let paramsObject = {};
+
+  for (let [key, value] of searchParams) {
+    paramsObject[key] = value;
+  }
+
+  return { currentPath, paramsObject };
+}
+
+function findInTree(tree, id) {
+  for (const element of tree) {
+    if (element.id === id) {
+      return element;
+    }
+
+    if (element.div && Array.isArray(element.div)) {
+      const foundElement = findInTree(element.div, id);
+      if (foundElement) {
+        return foundElement;
+      }
+    }
+  }
+
+  return null;
+}
+
+export default Ash;

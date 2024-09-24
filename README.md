@@ -9,7 +9,7 @@ Core concepts that I am trying to solve/experiment with:
 3. A global, mutable store is fine (until I'm proven otherwise)
 4. Vanilla JavaScript is beautiful and should not be seen as an escape hatch
 
-Installation
+## Installation
 
 Ash.js is designed to be included directly in your project without the need for package managers or build tools. Simply include the Ash.js code in your script:
 

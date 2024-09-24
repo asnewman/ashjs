@@ -4,9 +4,9 @@
 Ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications (stop using React for your blog).
 
 Core concepts that I am trying to solve/experiment with:
-1. Avoid HTML syntax (I hate it)
+1. Eliminate HTML syntax (I find it not ergonomic)
 2. Tell the engine when to re-render what (the auto-rerendering paradigm was a mistake)
-3. A global, mutable store is fine
+3. A global, mutable store is fine (until I'm proven otherwise)
 4. Vanilla JavaScript is beautiful and should not be seen as an escape hatch
 
 Installation

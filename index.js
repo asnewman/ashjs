@@ -49,7 +49,7 @@ class Ash {
 
   emit(event, data) {
     console.debug("emit", event, data);
-    this.events[event](data, this.render);
+    this.events[event](data, this.render, this.emit);
   }
 
   createNode(element) {

@@ -22,8 +22,10 @@ class Ash {
   }
 
   async render(id) {
-    const { currentPath, paramsObject } = getUrlInformation();
-    const tree = await this.routes[currentPath](this.emit);
+    const urlInformation = getUrlInformation();
+    const tree = await this.routes[
+      urlInformation.matchedDefinition ?? urlInformation.path
+    ](this.emit, { urlInformation });
 
     if (id) {
       const newElement = findInTree(tree, id);
@@ -92,33 +94,48 @@ class Ash {
 /**
  * ash.js helper functions
  */
-function extractPath(hash) {
-  // Check if the string is not empty and starts with a hash
-  if (hash && hash.startsWith("#")) {
-    // Split the string at the question mark
-    const parts = hash.split("?");
 
-    // The first part of the array will contain everything before the '?'
-    // Remove the '#' and return the result
-    return parts[0].substring(1);
+function getUrlInformation(definitions, url) {
+  // ash.js uses the hash part of the URL to identify the current page
+  const currentPathWithSearch = "/" + url.split("#")[1] || "";
+  const path = currentPathWithSearch.split("?")[0] || "";
+  const search = url.split("?")[1] || "";
+
+  // Parse the search parameters
+  const searchParams = Object.fromEntries(new URLSearchParams(search));
+
+  // Parse the URL parameters
+  let urlParams = {};
+
+  let matchedDefinition = null;
+
+  if (definitions) {
+    const currentPathParts = path.split("/");
+
+    for (const definition of definitions) {
+      const parts = definition.split("/");
+
+      if (parts.length !== currentPathParts.length) {
+        continue;
+      }
+
+      const isMatch = parts.every((part, index) => {
+        if (part.startsWith(":")) {
+          urlParams[part.substring(1)] = currentPathParts[index];
+          return true;
+        }
+
+        return part === currentPathParts[index];
+      });
+
+      if (isMatch) {
+        matchedDefinition = definition;
+        break;
+      }
+    }
   }
-  return ""; // Return an empty string if the conditions are not met
-}
 
-function getUrlInformation() {
-  let hash = window.location.hash;
-  const currentPath = extractPath(hash);
-  let queryString = window.location.hash;
-  let searchParams = new URLSearchParams(
-    queryString.substring(1).replace(currentPath, "")
-  );
-  let paramsObject = {};
-
-  for (let [key, value] of searchParams) {
-    paramsObject[key] = value;
-  }
-
-  return { currentPath, paramsObject };
+  return { path, searchParams, urlParams, matchedDefinition };
 }
 
 function findInTree(tree, id) {
@@ -139,3 +156,5 @@ function findInTree(tree, id) {
 }
 
 window.Ash = Ash;
+
+export { getUrlInformation };

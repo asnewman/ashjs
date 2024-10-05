@@ -1,9 +1,11 @@
 # Ash.js Documentation
+
 ## Introduction
 
 Ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications (stop using React for your blog).
 
 Core concepts that I am trying to solve/experiment with:
+
 1. Eliminate HTML syntax (I find it not ergonomic)
 2. Tell the engine when to re-render what (the auto-rerendering paradigm was a mistake)
 3. A global, mutable store is fine (until I'm proven otherwise)
@@ -15,8 +17,8 @@ Ash.js is designed to be included directly in your project without the need for 
 
 ```html
 <head>
-    <!-- Include via CDN -->
-    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@main/index.js"></script>
+  <!-- Include via CDN -->
+  <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@main/index.js"></script>
 </head>
 ```
 
@@ -31,6 +33,7 @@ To build an application with Ash.js, you need to:
     Initialize the Ash instance: Pass the routes and events to Ash.
 
 The most basic application will look like this:
+
 ```javascript
 <!DOCTYPE html>
 <html lang="en">

@@ -24,7 +24,7 @@
             onclick: () => emit("go", "/item/3"),
           },
         ],
-        "/item/:id": (emit, {urlInformation}) => [
+        "/item/:id": (emit, { urlInformation }) => [
           {
             div: `Showing item ${urlInformation.urlParams.id}`,
           },

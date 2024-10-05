@@ -75,3 +75,20 @@ The most basic application will look like this:
 ```
 
 Please remember that I am still building and experimenting with ash.js. If you have any ideas or suggestions, feel free to create an issue as I would love to hear them.
+
+## Usage
+### Targetted re-renders
+The simplest way to re-render your UI is by calling the `render()` function. This will re-render the entire page based on the URL and the `routes` you've provided. However, re-rendering the entire page is not performant, so instead, you can pass in an `id` into `render` to selectively re-render a portion of the UI. Make sure you attach an `id` field into the element you need to re-render, like so:
+```
+// UI snippet with the `id` attribute attached
+div: [
+  {p: store.showGoodbye ? "Bye!" : "Welcome to Ash.js!", id: "message"},
+  {button: "Good bye", onclick: () => emit("bye")}
+]
+
+// Event snippet to only re-render the displayed message
+"bye": (data, render) => {
+  store.showGoodbye = true;
+  render("message")
+}
+```

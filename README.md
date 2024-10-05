@@ -47,7 +47,7 @@ The most basic application will look like this:
       }
 
       const routes = {
-        "": (emit) => {
+        "/": (emit) => {
           return [
             {
               div: [

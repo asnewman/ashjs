@@ -159,4 +159,4 @@ function findInTree(tree, id) {
 
 window.Ash = Ash;
 
-export { getUrlInformation };
+//export { getUrlInformation };

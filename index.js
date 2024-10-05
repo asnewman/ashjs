@@ -22,9 +22,11 @@ class Ash {
   }
 
   async render(id) {
-    const urlInformation = getUrlInformation();
+    const url = window.location.href;
+    const urlInformation = getUrlInformation([], url);
+    const route = urlInformation.matchedDefinition ?? urlInformation.path;
     const tree = await this.routes[
-      urlInformation.matchedDefinition ?? urlInformation.path
+     route 
     ](this.emit, { urlInformation });
 
     if (id) {
@@ -97,7 +99,7 @@ class Ash {
 
 function getUrlInformation(definitions, url) {
   // ash.js uses the hash part of the URL to identify the current page
-  const currentPathWithSearch = "/" + url.split("#")[1] || "";
+  const currentPathWithSearch = "/" + (url.split("#")[1] || "");
   const path = currentPathWithSearch.split("?")[0] || "";
   const search = url.split("?")[1] || "";
 

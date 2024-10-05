@@ -1,8 +1,7 @@
-# Ash.js Documentation
-
+# ash.js Documentation
 ## Introduction
 
-Ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications (stop using React for your blog).
+ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications (stop using React for your blog).
 
 Core concepts that I am trying to solve/experiment with:
 
@@ -13,7 +12,7 @@ Core concepts that I am trying to solve/experiment with:
 
 ## Installation
 
-Ash.js is designed to be included directly in your project without the need for package managers or build tools. Simply include the Ash.js code in your script:
+ash.js is designed to be included directly in your project without the need for package managers or build tools. Simply include the ash.js code in your script:
 
 ```html
 <head>
@@ -22,11 +21,11 @@ Ash.js is designed to be included directly in your project without the need for 
 </head>
 ```
 
-Alternatively, you can copy and paste the source code for Ash.js into your project (trust me, it's fine!). Currently, I have no plans to publish this code on NPM.
+Alternatively, you can copy and paste the source code for ash.js into your project (trust me, it's fine!). Currently, I have no plans to publish this code on NPM.
 
 ## Getting Started
 
-To build an application with Ash.js, you need to:
+To build an application with ash.js, you need to:
 
     Define routes: Map URL paths to functions that return component trees.
     Define events: Map event names to business logic that update your UI.
@@ -50,7 +49,7 @@ The most basic application will look like this:
       }
 
       const routes = {
-        "": (emit) => {
+        "/": (emit) => {
           return [
             {
               div: [
@@ -75,4 +74,4 @@ The most basic application will look like this:
 </html>
 ```
 
-Please remember that I am still building and experimenting with Ash.js. If you have any ideas or suggestions, feel free to create an issue as I would love to hear them.
+Please remember that I am still building and experimenting with ash.js. If you have any ideas or suggestions, feel free to create an issue as I would love to hear them.

@@ -10,7 +10,8 @@ class Ash {
     this.events = {
       ...events,
       go: (path) => {
-        window.location.hash = `#${path}`;
+        const removedSlash = path.startsWith("/") ? path.substring(1) : path;
+        window.location.hash = `#${removedSlash}`;
       },
     };
 
@@ -23,11 +24,9 @@ class Ash {
 
   async render(id) {
     const url = window.location.href;
-    const urlInformation = getUrlInformation([], url);
+    const urlInformation = getUrlInformation(Object.keys(this.routes), url);
     const route = urlInformation.matchedDefinition ?? urlInformation.path;
-    const tree = await this.routes[
-     route 
-    ](this.emit, { urlInformation });
+    const tree = await this.routes[route](this.emit, { urlInformation });
 
     if (id) {
       const newElement = findInTree(tree, id);

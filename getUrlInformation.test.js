@@ -1,4 +1,4 @@
-import { getUrlInformation } from "./index.js";
+import { getUrlInformation } from "./getUrlInformation.js";
 import { assertEquals } from "jsr:@std/assert";
 
 Deno.test("should return the correct information", () => {

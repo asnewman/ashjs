@@ -1,0 +1,49 @@
+# ashjs markup language
+Wants:
+- Terse syntax
+- Don't deal with whitespace
+
+Example HTML to represent
+#+begin_src html
+  <div class="container>
+	      <p>This is my <a href="www.example.com">website</a>. Please visit it to learn more</p>
+	      <button onClick="clicked()">Click me</button>
+  </div>
+#+end_src
+
+## Option 1:
+Some kind of lisp-like syntax
+#+begin_src
+(div
+  (class "container")
+  (p
+    "This is my"
+    (a (attrs (href "www.example.com)) "website")
+    ". Please visit it to learn more"
+  )
+  (button (onClick "clicked") "Click me")
+)
+#+end_src
+
+Pros:
+- Doesn't require "whitespace" characters
+Cons:
+- Easy to get lost in parens
+  
+## Option 2:
+Like pug but no whitespace, use symbols instead
+#+begin_src
+-div(class="container")
+--p
+---This is my
+---a(href="www.example.com")website
+---.Please visit it to learn more
+--button(onClick="clicked")Click me
+#+end_src
+
+Pros:
+- No parens madness
+- Less characters in general
+Cons:
+- "-" are just whitespace? (though enforces consistent symboling)
+- Need to escape "-" or whatever symbol gets used

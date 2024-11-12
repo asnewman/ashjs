@@ -35,10 +35,10 @@ Like pug but no whitespace, use symbols instead
 #+begin_src
 -div(class="container")
 --p
----This is my
----a(href="www.example.com")website
----.Please visit it to learn more
---button(onClick="clicked")Click me
+---"This is my"
+---a(href="www.example.com")"website"
+---".Please visit it to learn more"
+--button(onClick="clicked")"Click me"
 #+end_src
 
 Pros:

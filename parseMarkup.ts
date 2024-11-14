@@ -1,6 +1,6 @@
-const htmlTags = new Set(["div"]);
+const htmlTags = new Set(["div", "p", "button", "a"]);
 
-enum TokenTypes {
+export enum TokenTypes {
   DASH,
   TAG,
   EQUAL,
@@ -16,7 +16,7 @@ interface Token {
   value: string;
 }
 
-function tokenize(markup: string): Token[] {
+export function tokenize(markup: string): Token[] {
   let i = 0;
   const result: Token[] = [];
 
@@ -73,6 +73,7 @@ function tokenize(markup: string): Token[] {
       markup[i] !== "=" &&
       markup[i] !== "(" &&
       markup[i] !== ")" &&
+      markup[i] !== "\n" &&
       i < markup.length
     ) {
       wordArr.push(markup[i]);
@@ -96,14 +97,72 @@ function tokenize(markup: string): Token[] {
   return result;
 }
 
-const exampleMarkup = `
--div(class="container")
---p
----"This is my"
----a(href="www.example.com")"website"
----".Please visit it to learn more"
---button(onClick="clicked")"Click me"
-`;
+export enum ExpressionTypes {
+  ROOT,
+  LEVEL,
+  TAG,
+  STRING_LITERAL,
+}
 
-const result1 = tokenize(exampleMarkup);
-console.log(result1);
+export type Expression = { type: ExpressionTypes } & any;
+
+export function parse(tokens: Token[]): Expression | null {
+  const result: Expression | null = { type: TokenTypes, body: [] };
+
+  let i = 0;
+  while (i < tokens.length) {
+    console.log(tokens[i].value);
+    if (tokens[i].type === TokenTypes.NEW_LINE) {
+      i++;
+      continue;
+    }
+
+    if (tokens[i].type === TokenTypes.TAG) {
+      const tagExpression = {
+        type: ExpressionTypes.TAG,
+        tagName: tokens[i].value,
+        attributes: {} as any,
+        body: "",
+      };
+
+      i++;
+
+      if (tokens[i].type === TokenTypes.L_PAREN) {
+        while (tokens[i].type !== TokenTypes.R_PAREN && i < tokens.length) {
+          console.log(tokens[i].value);
+          i++;
+          if (tokens[i].type !== TokenTypes.WORD) {
+            throw new Error("Expected attribute for tag");
+          }
+
+          const attributeName = tokens[i].value;
+
+          i++;
+          if (tokens[i].type !== TokenTypes.EQUAL) {
+            throw new Error("Expected = after attribute name");
+          }
+
+          i++;
+          if (tokens[i].type !== TokenTypes.STRING) {
+            throw new Error("Expected attribute value after =");
+          }
+
+          const attributeValue = tokens[i].value;
+
+          tagExpression.attributes[attributeName] = attributeValue;
+        }
+        i++;
+      }
+
+      if (tokens[i].type === TokenTypes.STRING) {
+        tagExpression.body = tagExpression.body.concat(tokens[i].value);
+        i++;
+        continue;
+      }
+    }
+
+    i++;
+  }
+
+  return result;
+}

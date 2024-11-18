@@ -27,6 +27,7 @@ export class Tokenizer {
 
   tokenize() {
     while (this.cursor < this.markup.length) {
+      console.log(this.cursor);
       if (this.markup[this.cursor] === "-") {
         this.result.push({ type: TokenTypes.DASH, value: "-" });
         this.cursor++;
@@ -65,6 +66,7 @@ export class Tokenizer {
       let wordArr: string[] = [];
 
       while (this.isSymbol()) {
+        console.log("tag: " + this.markup[this.cursor]);
         wordArr.push(this.markup[this.cursor]);
         this.cursor++;
       }
@@ -126,7 +128,6 @@ export function parse(tokens: Token[]): Expression | null {
 
   let i = 0;
   while (i < tokens.length) {
-    console.log(tokens[i].value);
     if (tokens[i].type === TokenTypes.NEW_LINE) {
       i++;
       continue;
@@ -144,7 +145,6 @@ export function parse(tokens: Token[]): Expression | null {
 
       if (tokens[i].type === TokenTypes.L_PAREN) {
         while (tokens[i].type !== TokenTypes.R_PAREN && i < tokens.length) {
-          console.log(tokens[i].value);
           i++;
           if (tokens[i].type !== TokenTypes.WORD) {
             throw new Error("Expected attribute for tag");

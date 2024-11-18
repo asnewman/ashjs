@@ -1,5 +1,10 @@
 import { assertEquals } from "jsr:@std/assert";
-import { Tokenizer, parse, ExpressionTypes, TokenTypes } from "./parseMarkup.ts";
+import {
+  Tokenizer,
+  parse,
+  ExpressionTypes,
+  TokenTypes,
+} from "./parseMarkup.ts";
 
 const exampleMarkup = `
 -div(class="container")
@@ -58,34 +63,46 @@ const expectedTokens = [
 ];
 
 Deno.test("token test", () => {
-  const tokenizer = new Tokenizer(exampleMarkup)
+  const tokenizer = new Tokenizer(exampleMarkup);
   const result = tokenizer.tokenize();
   assertEquals(result, expectedTokens);
 });
 
-// Deno.test("simple parse", () => {
-//   const markup = `
-// -div(class="myClass")
-// --"What is up"
-//   `;
-// 
-//   console.log("getting tokens");
-// 
-//   const tokens = tokenize(markup);
-// 
-//   console.log(tokens);
-// 
-//   const result = parse(tokens);
-// 
-//   assertEquals(result, {
-//     type: ExpressionTypes.ROOT,
-//     body: [
-//       {
-//         type: ExpressionTypes.TAG,
-//         tagName: "div",
-//         attributes: { class: "myClass" },
-//         body: "What is up",
-//       },
-//     ],
-//   });
-// });
+Deno.test.only("simple parse", () => {
+  const markup = `
+-div(class="myClass")
+--"What is up"
+`;
+
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  assertEquals(tokens, [
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.TAG, value: "div" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "class" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.STRING, value: "myClass" },
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.STRING, value: "What is up" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+  ]);
+
+  // const result = parse(tokens);
+  //
+  // 	assertEquals(result, {
+  // 		type: ExpressionTypes.ROOT,
+  // 		body: [
+  // 			{
+  // 				type: ExpressionTypes.TAG,
+  // 				tagName: "div",
+  // 				attributes: { class: "myClass" },
+  // 				body: "What is up",
+  // 			},
+  // 		],
+  // 	});
+});

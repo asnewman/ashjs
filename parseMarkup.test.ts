@@ -1,7 +1,7 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
   Tokenizer,
-  parse,
+  Parser,
   ExpressionTypes,
   TokenTypes,
 } from "./parseMarkup.ts";
@@ -68,7 +68,7 @@ Deno.test("token test", () => {
   assertEquals(result, expectedTokens);
 });
 
-Deno.test.only("simple parse", () => {
+Deno.only("simple parse", () => {
   const markup = `
 -div(class="myClass")
 --"What is up"
@@ -92,17 +92,18 @@ Deno.test.only("simple parse", () => {
     { type: TokenTypes.NEW_LINE, value: "\n" },
   ]);
 
-  // const result = parse(tokens);
-  //
-  // 	assertEquals(result, {
-  // 		type: ExpressionTypes.ROOT,
-  // 		body: [
-  // 			{
-  // 				type: ExpressionTypes.TAG,
-  // 				tagName: "div",
-  // 				attributes: { class: "myClass" },
-  // 				body: "What is up",
-  // 			},
-  // 		],
-  // 	});
+  const parser = new Parser(tokens);
+  const result = parser.parse();
+
+  assertEquals(result, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "myClass" },
+        body: "What is up",
+      },
+    ],
+  });
 });

@@ -27,7 +27,6 @@ export class Tokenizer {
 
   tokenize() {
     while (this.cursor < this.markup.length) {
-      console.log(this.cursor);
       if (this.markup[this.cursor] === "-") {
         this.result.push({ type: TokenTypes.DASH, value: "-" });
         this.cursor++;
@@ -66,7 +65,6 @@ export class Tokenizer {
       let wordArr: string[] = [];
 
       while (this.isSymbol()) {
-        console.log("tag: " + this.markup[this.cursor]);
         wordArr.push(this.markup[this.cursor]);
         this.cursor++;
       }
@@ -123,61 +121,91 @@ export enum ExpressionTypes {
 
 export type Expression = { type: ExpressionTypes } & any;
 
-export function parse(tokens: Token[]): Expression | null {
-  const result: Expression | null = { type: TokenTypes, body: [] };
+export class Parser {
+  tokens: Token[] = [];
+  cursor = 0;
+  result: Expression = { type: ExpressionTypes.ROOT, body: [] as any[] };
 
-  let i = 0;
-  while (i < tokens.length) {
-    if (tokens[i].type === TokenTypes.NEW_LINE) {
-      i++;
-      continue;
-    }
-
-    if (tokens[i].type === TokenTypes.TAG) {
-      const tagExpression = {
-        type: ExpressionTypes.TAG,
-        tagName: tokens[i].value,
-        attributes: {} as any,
-        body: "",
-      };
-
-      i++;
-
-      if (tokens[i].type === TokenTypes.L_PAREN) {
-        while (tokens[i].type !== TokenTypes.R_PAREN && i < tokens.length) {
-          i++;
-          if (tokens[i].type !== TokenTypes.WORD) {
-            throw new Error("Expected attribute for tag");
-          }
-
-          const attributeName = tokens[i].value;
-
-          i++;
-          if (tokens[i].type !== TokenTypes.EQUAL) {
-            throw new Error("Expected = after attribute name");
-          }
-
-          i++;
-          if (tokens[i].type !== TokenTypes.STRING) {
-            throw new Error("Expected attribute value after =");
-          }
-
-          const attributeValue = tokens[i].value;
-
-          tagExpression.attributes[attributeName] = attributeValue;
-        }
-        i++;
-      }
-
-      if (tokens[i].type === TokenTypes.STRING) {
-        tagExpression.body = tagExpression.body.concat(tokens[i].value);
-        i++;
-        continue;
-      }
-    }
-
-    i++;
+  constructor(tokens: Token[]) {
+    this.tokens = tokens;
   }
 
-  return result;
+  parse(): Expression {
+    while (this.cursor < this.tokens.length) {
+      if (this.tokens[this.cursor].type === TokenTypes.NEW_LINE) {
+        this.cursor++;
+        continue;
+      }
+
+      if (this.tokens[this.cursor].type === TokenTypes.TAG) {
+        const tagExpression = {
+          type: ExpressionTypes.TAG,
+          tagName: this.tokens[this.cursor].value,
+          attributes: {} as any,
+          body: "",
+        };
+
+        this.cursor++;
+
+        if (this.tokens[this.cursor].type === TokenTypes.L_PAREN) {
+          this.cursor++;
+          while (
+            this.tokens[this.cursor].type !== TokenTypes.R_PAREN &&
+            this.cursor < this.tokens.length
+          ) {
+            if (this.tokens[this.cursor].type !== TokenTypes.WORD) {
+              throw new Error("Expected attribute for tag");
+            }
+
+            const attributeName = this.tokens[this.cursor].value;
+
+            this.cursor++;
+            if (this.tokens[this.cursor].type !== TokenTypes.EQUAL) {
+              throw new Error("Expected = after attribute name");
+            }
+
+            this.cursor++;
+            if (this.tokens[this.cursor].type !== TokenTypes.STRING) {
+              throw new Error("Expected attribute value after =");
+            }
+
+            const attributeValue = this.tokens[this.cursor].value;
+
+            tagExpression.attributes[attributeName] = attributeValue;
+            this.cursor++;
+          }
+        }
+
+        this.cursor++; // should be R_PAREN
+
+        if (this.tokens[this.cursor].type === TokenTypes.NEW_LINE) {
+          this.cursor++;
+        }
+
+        // Calculate dashes to see if it belongs in the body
+        let dashesCnt = 0;
+        while (
+          this.tokens[this.cursor].type === TokenTypes.DASH &&
+          this.cursor < this.tokens.length
+        ) {
+          dashesCnt++;
+          this.cursor++;
+        }
+
+        // TODO check current dashes level
+        if (this.tokens[this.cursor].type === TokenTypes.STRING) {
+          tagExpression.body = tagExpression.body.concat(
+            this.tokens[this.cursor].value,
+          );
+          this.cursor++;
+        }
+
+        this.result.body.push(tagExpression);
+      }
+
+      this.cursor++;
+    }
+
+    return this.result;
+  }
 }

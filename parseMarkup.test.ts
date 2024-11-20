@@ -68,7 +68,7 @@ Deno.test("token test", () => {
   assertEquals(result, expectedTokens);
 });
 
-Deno.only("simple parse", () => {
+Deno.test("simple parse", () => {
   const markup = `
 -div(class="myClass")
 --"What is up"
@@ -103,6 +103,83 @@ Deno.only("simple parse", () => {
         tagName: "div",
         attributes: { class: "myClass" },
         body: "What is up",
+      },
+    ],
+  });
+});
+
+Deno.test("multiple attribute parse", () => {
+  const markup = `
+-div(class="myClass" id="myDiv")
+--"What is up"
+`;
+
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  assertEquals(tokens, [
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.TAG, value: "div" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "class" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.STRING, value: "myClass" },
+    { type: TokenTypes.SPACE, value: " " },
+    { type: TokenTypes.WORD, value: "id" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.STRING, value: "myDiv" },
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.STRING, value: "What is up" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+  ]);
+
+  const parser = new Parser(tokens);
+  const result = parser.parse();
+
+  assertEquals(result, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "myClass", id: "myDiv" },
+        body: "What is up",
+      },
+    ],
+  });
+});
+
+Deno.test("multiple tags and multiple body", () => {
+  const markup = `
+-div(class="myClass" id="myDiv")
+--"What is up"
+--"My name is Ash"
+-div(class="anotherClass")
+`;
+
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+
+  const parser = new Parser(tokens);
+  const result = parser.parse();
+
+  assertEquals(result, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "myClass", id: "myDiv" },
+        body: "What is upMy name is Ash",
+      },
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "anotherClass" },
+        body: "",
       },
     ],
   });

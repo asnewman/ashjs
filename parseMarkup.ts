@@ -9,6 +9,7 @@ export enum TokenTypes {
   STRING,
   NEW_LINE,
   WORD,
+  SPACE,
 }
 
 interface Token {
@@ -57,6 +58,12 @@ export class Tokenizer {
         continue;
       }
 
+      if (this.markup[this.cursor] === " ") {
+        this.result.push({ type: TokenTypes.SPACE, value: " " });
+        this.cursor++;
+        continue;
+      }
+
       if (this.markup[this.cursor] === '"') {
         this.tokenizeQuote();
         continue;
@@ -64,7 +71,7 @@ export class Tokenizer {
 
       let wordArr: string[] = [];
 
-      while (this.isSymbol()) {
+      while (this.isNotSymbol()) {
         wordArr.push(this.markup[this.cursor]);
         this.cursor++;
       }
@@ -99,7 +106,7 @@ export class Tokenizer {
     this.cursor++;
   }
 
-  isSymbol() {
+  isNotSymbol() {
     return (
       this.markup[this.cursor] !== " " &&
       this.markup[this.cursor] !== "-" &&
@@ -125,87 +132,120 @@ export class Parser {
   tokens: Token[] = [];
   cursor = 0;
   result: Expression = { type: ExpressionTypes.ROOT, body: [] as any[] };
+  currDashLevel = 0;
 
   constructor(tokens: Token[]) {
-    this.tokens = tokens;
+    const tokensNoSpaces = tokens.filter(
+      (t) => t.type !== TokenTypes.SPACE && t.type !== TokenTypes.NEW_LINE,
+    );
+    this.tokens = tokensNoSpaces;
   }
 
   parse(): Expression {
     while (this.cursor < this.tokens.length) {
-      if (this.tokens[this.cursor].type === TokenTypes.NEW_LINE) {
+      if (this.tokens[this.cursor].type === TokenTypes.DASH) {
+        this.currDashLevel = 0;
+        while (this.tokens[this.cursor].type === TokenTypes.DASH) {
+          this.currDashLevel++;
+          this.cursor++;
+        }
+      }
+
+      if (this.tokens[this.cursor].type === TokenTypes.SPACE) {
         this.cursor++;
         continue;
       }
 
       if (this.tokens[this.cursor].type === TokenTypes.TAG) {
-        const tagExpression = {
-          type: ExpressionTypes.TAG,
-          tagName: this.tokens[this.cursor].value,
-          attributes: {} as any,
-          body: "",
-        };
-
-        this.cursor++;
-
-        if (this.tokens[this.cursor].type === TokenTypes.L_PAREN) {
-          this.cursor++;
-          while (
-            this.tokens[this.cursor].type !== TokenTypes.R_PAREN &&
-            this.cursor < this.tokens.length
-          ) {
-            if (this.tokens[this.cursor].type !== TokenTypes.WORD) {
-              throw new Error("Expected attribute for tag");
-            }
-
-            const attributeName = this.tokens[this.cursor].value;
-
-            this.cursor++;
-            if (this.tokens[this.cursor].type !== TokenTypes.EQUAL) {
-              throw new Error("Expected = after attribute name");
-            }
-
-            this.cursor++;
-            if (this.tokens[this.cursor].type !== TokenTypes.STRING) {
-              throw new Error("Expected attribute value after =");
-            }
-
-            const attributeValue = this.tokens[this.cursor].value;
-
-            tagExpression.attributes[attributeName] = attributeValue;
-            this.cursor++;
-          }
-        }
-
-        this.cursor++; // should be R_PAREN
-
-        if (this.tokens[this.cursor].type === TokenTypes.NEW_LINE) {
-          this.cursor++;
-        }
-
-        // Calculate dashes to see if it belongs in the body
-        let dashesCnt = 0;
-        while (
-          this.tokens[this.cursor].type === TokenTypes.DASH &&
-          this.cursor < this.tokens.length
-        ) {
-          dashesCnt++;
-          this.cursor++;
-        }
-
-        // TODO check current dashes level
-        if (this.tokens[this.cursor].type === TokenTypes.STRING) {
-          tagExpression.body = tagExpression.body.concat(
-            this.tokens[this.cursor].value,
-          );
-          this.cursor++;
-        }
-
-        this.result.body.push(tagExpression);
+        this.parseTag();
       }
 
       this.cursor++;
     }
 
     return this.result;
+  }
+
+  parseTag() {
+    const tagExpression = {
+      type: ExpressionTypes.TAG,
+      tagName: this.tokens[this.cursor].value,
+      attributes: {} as any,
+      body: "",
+    };
+
+    this.cursor++;
+
+    if (this.tokens[this.cursor].type === TokenTypes.L_PAREN) {
+      this.cursor++;
+
+      while (
+        this.tokens[this.cursor].type !== TokenTypes.R_PAREN &&
+        this.cursor < this.tokens.length
+      ) {
+        if (this.tokens[this.cursor].type !== TokenTypes.WORD) {
+          throw new Error("Expected attribute for tag");
+        }
+
+        const attributeName = this.tokens[this.cursor].value;
+
+        this.cursor++;
+        if (this.tokens[this.cursor].type !== TokenTypes.EQUAL) {
+          throw new Error("Expected = after attribute name");
+        }
+
+        this.cursor++;
+        if (this.tokens[this.cursor].type !== TokenTypes.STRING) {
+          throw new Error("Expected attribute value after =");
+        }
+
+        const attributeValue = this.tokens[this.cursor].value;
+
+        tagExpression.attributes[attributeName] = attributeValue;
+        this.cursor++;
+      }
+    }
+
+    this.cursor++; // should be R_PAREN
+
+    const childDashLevel = this.currDashLevel + 1;
+
+    // Go through all children
+    while (true) {
+      let lookAheadCursor = this.cursor;
+      this.currDashLevel = 0;
+
+      while (
+        this.tokens[lookAheadCursor] &&
+        this.tokens[lookAheadCursor].type === TokenTypes.DASH
+      ) {
+        this.currDashLevel++;
+        lookAheadCursor++;
+      }
+
+      if (childDashLevel !== this.currDashLevel) break;
+
+      // Calculate dashes to see if it belongs in the body
+      let dashesCnt = 0;
+      while (
+        this.cursor < this.tokens.length &&
+        this.tokens[this.cursor].type === TokenTypes.DASH
+      ) {
+        dashesCnt++;
+        this.cursor++;
+      }
+
+      if (
+        this.cursor < this.tokens.length &&
+        this.tokens[this.cursor].type === TokenTypes.STRING
+      ) {
+        tagExpression.body = tagExpression.body.concat(
+          this.tokens[this.cursor].value,
+        );
+        this.cursor++;
+      }
+    }
+
+    this.result.body.push(tagExpression);
   }
 }

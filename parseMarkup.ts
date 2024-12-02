@@ -157,7 +157,7 @@ export class Parser {
       }
 
       if (this.tokens[this.cursor].type === TokenTypes.TAG) {
-        this.parseTag();
+        this.result.body.push(this.parseTag());
       }
 
       this.cursor++;
@@ -235,15 +235,18 @@ export class Parser {
         this.cursor++;
       }
 
-      if (
-        this.cursor < this.tokens.length &&
-        this.tokens[this.cursor].type === TokenTypes.STRING
-      ) {
+      if (this.cursor >= this.tokens.length) continue;
+
+      if (this.tokens[this.cursor].type === TokenTypes.STRING) {
         tagExpression.body.push(this.tokens[this.cursor].value);
+        this.cursor++;
+      }
+      else if (this.tokens[this.cursor].type === TokenTypes.TAG) {
+        tagExpression.body.push(this.parseTag());
         this.cursor++;
       }
     }
 
-    this.result.body.push(tagExpression);
+    return tagExpression;
   }
 }

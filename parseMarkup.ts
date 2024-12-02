@@ -171,7 +171,7 @@ export class Parser {
       type: ExpressionTypes.TAG,
       tagName: this.tokens[this.cursor].value,
       attributes: {} as any,
-      body: "",
+      body: [] as any[],
     };
 
     this.cursor++;
@@ -239,9 +239,7 @@ export class Parser {
         this.cursor < this.tokens.length &&
         this.tokens[this.cursor].type === TokenTypes.STRING
       ) {
-        tagExpression.body = tagExpression.body.concat(
-          this.tokens[this.cursor].value,
-        );
+        tagExpression.body.push(this.tokens[this.cursor].value);
         this.cursor++;
       }
     }

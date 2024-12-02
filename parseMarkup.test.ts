@@ -102,7 +102,7 @@ Deno.test("simple parse", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass" },
-        body: "What is up",
+        body: ["What is up"],
       },
     ],
   });
@@ -146,7 +146,7 @@ Deno.test("multiple attribute parse", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
-        body: "What is up",
+        body: ["What is up"],
       },
     ],
   });
@@ -173,14 +173,48 @@ Deno.test("multiple tags and multiple body", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
-        body: "What is upMy name is Ash",
+        body: ["What is up", "My name is Ash"],
       },
       {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "anotherClass" },
-        body: "",
+        body: [],
       },
     ],
   });
 });
+
+Deno.test("nested tags", () => {
+  const markup = `
+-div(class="myClass" id="myDiv")
+--"I'm not nested"
+--div(class="anotherClass")
+---"I'm nested"
+`;
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+
+  const parser = new Parser(tokens);
+  const result = parser.parse();
+
+  assertEquals(result, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "myClass", id: "myDiv" },
+        body: [
+          "I'm not nested",
+          {
+            type: ExpressionTypes.TAG,
+            tagName: "div",
+            attributes: { class: "anotherClass" },
+            body: ["I'm nested"],
+          },
+        ],
+      },
+    ],
+  });
+})

@@ -218,3 +218,12 @@ Deno.test("nested tags", () => {
     ],
   });
 })
+
+Deno.test("parses events", () => {
+  const markup = `
+-div(class="myClass" id="myDiv")
+--"I'm not nested"
+--div(class="anotherClass")
+---"I'm nested"
+`;
+})

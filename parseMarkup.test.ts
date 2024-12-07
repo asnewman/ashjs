@@ -102,7 +102,7 @@ Deno.test("simple parse", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass" },
-        body: ["What is up"],
+        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up"}],
       },
     ],
   });
@@ -146,7 +146,7 @@ Deno.test("multiple attribute parse", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
-        body: ["What is up"],
+        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up"}],
       },
     ],
   });
@@ -173,7 +173,7 @@ Deno.test("multiple tags and multiple body", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
-        body: ["What is up", "My name is Ash"],
+        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up"}, { type: ExpressionTypes.STRING_LITERAL, body: "My name is Ash"}],
       },
       {
         type: ExpressionTypes.TAG,
@@ -206,12 +206,12 @@ Deno.test("nested tags", () => {
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
         body: [
-          "I'm not nested",
+          { type: ExpressionTypes.STRING_LITERAL, body: "I'm not nested"},
           {
             type: ExpressionTypes.TAG,
             tagName: "div",
             attributes: { class: "anotherClass" },
-            body: ["I'm nested"],
+            body: [{ type: ExpressionTypes.STRING_LITERAL, body: "I'm nested"}],
           },
         ],
       },
@@ -221,9 +221,27 @@ Deno.test("nested tags", () => {
 
 Deno.test("parses events", () => {
   const markup = `
--div(class="myClass" id="myDiv")
---"I'm not nested"
---div(class="anotherClass")
----"I'm nested"
+-div(class="myClass" id="myDiv" onclick="myeventname")
+--"hello world"
 `;
+  
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+
+  const parser = new Parser(tokens);
+  const result = parser.parse();
+
+  assertEquals(result, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "myClass", id: "myDiv", onclick: "myeventname" },
+        body: [
+          { type: ExpressionTypes.STRING_LITERAL, body: "hello world" },
+        ],
+      },
+    ],
+  });
 })

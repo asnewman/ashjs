@@ -238,7 +238,11 @@ export class Parser {
       if (this.cursor >= this.tokens.length) continue;
 
       if (this.tokens[this.cursor].type === TokenTypes.STRING) {
-        tagExpression.body.push(this.tokens[this.cursor].value);
+        const newStringExpression: Expression = {
+          type: ExpressionTypes.STRING_LITERAL,
+          body: this.tokens[this.cursor].value
+        };
+        tagExpression.body.push(newStringExpression);
         this.cursor++;
       }
       else if (this.tokens[this.cursor].type === TokenTypes.TAG) {

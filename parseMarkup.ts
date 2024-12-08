@@ -240,17 +240,53 @@ export class Parser {
       if (this.tokens[this.cursor].type === TokenTypes.STRING) {
         const newStringExpression: Expression = {
           type: ExpressionTypes.STRING_LITERAL,
-          body: this.tokens[this.cursor].value
+          body: this.tokens[this.cursor].value,
         };
         tagExpression.body.push(newStringExpression);
         this.cursor++;
-      }
-      else if (this.tokens[this.cursor].type === TokenTypes.TAG) {
+      } else if (this.tokens[this.cursor].type === TokenTypes.TAG) {
         tagExpression.body.push(this.parseTag());
         this.cursor++;
       }
     }
 
     return tagExpression;
+  }
+}
+
+export class Transformer {
+  ast: Expression = { type: ExpressionTypes.ROOT, body: [] as any[] };
+  cursor = 0;
+
+  constructor(ast) {
+    this.ast = ast;
+  }
+
+  transform() {
+    this.cursor = 0;
+    const result: Object[] = [];
+
+    // for now let's assume that there are no root level
+    // string literals, so these are all tags
+    while (this.cursor < this.ast.body) {
+      result.push(this.transformTag());
+      this.cursor++;
+    }
+  }
+
+  transformTag() {
+    const tagExpression = ast.body[this.cursor];
+
+    if (tagExpression.type !== ExpressionTypes.TAG) {
+      throw new Error(
+        "Expected tag expression, instead received: " + this.tagExpression.type,
+      );
+    }
+
+    const jsonTag = {
+      [tagExpression.tagName]: tagExpression.body.map((element) => {
+        if (element.type === ExpressionTypes.TAG) return transformTag();
+      }),
+    };
   }
 }

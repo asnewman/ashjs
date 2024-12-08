@@ -4,6 +4,7 @@ import {
   Parser,
   ExpressionTypes,
   TokenTypes,
+  Transformer
 } from "./parseMarkup.ts";
 
 const exampleMarkup = `
@@ -244,4 +245,31 @@ Deno.test("parses events", () => {
       },
     ],
   });
+})
+
+
+Deno.test("transform basic", () => {
+  const expression = {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "myClass", id: "myDiv", onclick: "myeventname" },
+        body: [
+          { type: ExpressionTypes.STRING_LITERAL, body: "hello world" },
+        ],
+      },
+    ],
+  }
+
+  const transformer = new Transformer(expression)
+  const result = transformer.transform()
+
+  assertEquals(result, [{
+    div: ["hello world"],
+    class: "myClass",
+    id: "myDiv",
+    onclick: "myeventname"
+  }])
 })

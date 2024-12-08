@@ -258,7 +258,7 @@ export class Transformer {
   ast: Expression = { type: ExpressionTypes.ROOT, body: [] as any[] };
   cursor = 0;
 
-  constructor(ast) {
+  constructor(ast: Expression) {
     this.ast = ast;
   }
 
@@ -268,25 +268,34 @@ export class Transformer {
 
     // for now let's assume that there are no root level
     // string literals, so these are all tags
-    while (this.cursor < this.ast.body) {
-      result.push(this.transformTag());
+    while (this.cursor < this.ast.body.length) {
+      result.push(this.transformTag(this.ast.body[this.cursor]));
       this.cursor++;
     }
+
+    return result
   }
 
-  transformTag() {
-    const tagExpression = ast.body[this.cursor];
-
+  transformTag(tagExpression: Expression): Object {
     if (tagExpression.type !== ExpressionTypes.TAG) {
       throw new Error(
-        "Expected tag expression, instead received: " + this.tagExpression.type,
+        "Expected tag expression, instead received: " + tagExpression.type,
       );
     }
 
     const jsonTag = {
-      [tagExpression.tagName]: tagExpression.body.map((element) => {
-        if (element.type === ExpressionTypes.TAG) return transformTag();
+      [tagExpression.tagName]: tagExpression.body.map((element: any) => {
+        if (element.type === ExpressionTypes.TAG) return this.transformTag(element);
+
+	if (element.type === ExpressionTypes.STRING_LITERAL) return element.body;
       }),
     };
+
+    for (const [key, value] of Object.entries(tagExpression.attributes)) {
+      // @ts-ignore
+      jsonTag[key] = value;
+    }
+
+    return jsonTag
   }
 }

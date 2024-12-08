@@ -273,7 +273,7 @@ export class Transformer {
       this.cursor++;
     }
 
-    return result
+    return result;
   }
 
   transformTag(tagExpression: Expression): Object {
@@ -285,9 +285,11 @@ export class Transformer {
 
     const jsonTag = {
       [tagExpression.tagName]: tagExpression.body.map((element: any) => {
-        if (element.type === ExpressionTypes.TAG) return this.transformTag(element);
+        if (element.type === ExpressionTypes.TAG)
+          return this.transformTag(element);
 
-	if (element.type === ExpressionTypes.STRING_LITERAL) return element.body;
+        if (element.type === ExpressionTypes.STRING_LITERAL)
+          return element.body;
       }),
     };
 
@@ -296,6 +298,6 @@ export class Transformer {
       jsonTag[key] = value;
     }
 
-    return jsonTag
+    return jsonTag;
   }
 }

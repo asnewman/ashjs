@@ -4,7 +4,7 @@ import {
   Parser,
   ExpressionTypes,
   TokenTypes,
-  Transformer
+  Transformer,
 } from "./parseMarkup.ts";
 
 const exampleMarkup = `
@@ -103,7 +103,7 @@ Deno.test("simple parse", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass" },
-        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up"}],
+        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up" }],
       },
     ],
   });
@@ -147,7 +147,7 @@ Deno.test("multiple attribute parse", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
-        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up"}],
+        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up" }],
       },
     ],
   });
@@ -174,7 +174,10 @@ Deno.test("multiple tags and multiple body", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
-        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "What is up"}, { type: ExpressionTypes.STRING_LITERAL, body: "My name is Ash"}],
+        body: [
+          { type: ExpressionTypes.STRING_LITERAL, body: "What is up" },
+          { type: ExpressionTypes.STRING_LITERAL, body: "My name is Ash" },
+        ],
       },
       {
         type: ExpressionTypes.TAG,
@@ -207,25 +210,27 @@ Deno.test("nested tags", () => {
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv" },
         body: [
-          { type: ExpressionTypes.STRING_LITERAL, body: "I'm not nested"},
+          { type: ExpressionTypes.STRING_LITERAL, body: "I'm not nested" },
           {
             type: ExpressionTypes.TAG,
             tagName: "div",
             attributes: { class: "anotherClass" },
-            body: [{ type: ExpressionTypes.STRING_LITERAL, body: "I'm nested"}],
+            body: [
+              { type: ExpressionTypes.STRING_LITERAL, body: "I'm nested" },
+            ],
           },
         ],
       },
     ],
   });
-})
+});
 
 Deno.test("parses events", () => {
   const markup = `
 -div(class="myClass" id="myDiv" onclick="myeventname")
 --"hello world"
 `;
-  
+
   const tokenizer = new Tokenizer(markup);
   const tokens = tokenizer.tokenize();
 
@@ -239,14 +244,11 @@ Deno.test("parses events", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv", onclick: "myeventname" },
-        body: [
-          { type: ExpressionTypes.STRING_LITERAL, body: "hello world" },
-        ],
+        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "hello world" }],
       },
     ],
   });
-})
-
+});
 
 Deno.test("transform basic", () => {
   const expression = {
@@ -256,20 +258,66 @@ Deno.test("transform basic", () => {
         type: ExpressionTypes.TAG,
         tagName: "div",
         attributes: { class: "myClass", id: "myDiv", onclick: "myeventname" },
+        body: [{ type: ExpressionTypes.STRING_LITERAL, body: "hello world" }],
+      },
+    ],
+  };
+
+  const transformer = new Transformer(expression);
+  const result = transformer.transform();
+
+  assertEquals(result, [
+    {
+      div: ["hello world"],
+      class: "myClass",
+      id: "myDiv",
+      onclick: "myeventname",
+    },
+  ]);
+});
+
+Deno.test.only("transform nested", () => {
+  const expression = {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { class: "myClass", id: "myDiv", onclick: "myeventname" },
         body: [
           { type: ExpressionTypes.STRING_LITERAL, body: "hello world" },
+          {
+            type: ExpressionTypes.TAG,
+            tagName: "div",
+            attributes: {
+              class: "myNestedClass",
+              id: "myNestedDiv",
+              onclick: "mynestedeventname",
+            },
+            body: [{ type: ExpressionTypes.STRING_LITERAL, body: "good bye" }],
+          },
         ],
       },
     ],
-  }
+  };
 
-  const transformer = new Transformer(expression)
-  const result = transformer.transform()
+  const transformer = new Transformer(expression);
+  const result = transformer.transform();
 
-  assertEquals(result, [{
-    div: ["hello world"],
-    class: "myClass",
-    id: "myDiv",
-    onclick: "myeventname"
-  }])
-})
+  assertEquals(result, [
+    {
+      div: [
+        "hello world",
+        {
+          div: ["good bye"],
+          class: "myNestedClass",
+          id: "myNestedDiv",
+          onclick: "mynestedeventname",
+        },
+      ],
+      class: "myClass",
+      id: "myDiv",
+      onclick: "myeventname",
+    },
+  ]);
+});

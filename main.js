@@ -72,6 +72,11 @@ class Ash {
       node.textContent = contentOrChildren;
     } else if (Array.isArray(contentOrChildren)) {
       contentOrChildren.forEach((childElement) => {
+        if (childElement === "string") {
+          node.textContent += childElement;
+          return;
+        }
+
         const childNode = this.createNode(childElement);
         if (childNode) {
           node.appendChild(childNode);

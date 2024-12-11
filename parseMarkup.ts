@@ -1,4 +1,4 @@
-const htmlTags = new Set(["div", "p", "button", "a"]);
+const htmlTags = new Set(["div", "p", "button", "a", "img"]);
 
 export enum TokenTypes {
   DASH,
@@ -254,12 +254,16 @@ export class Parser {
   }
 }
 
+type Emit = (eventName: string) => void;
+
 export class Transformer {
   ast: Expression = { type: ExpressionTypes.ROOT, body: [] as any[] };
   cursor = 0;
+  emit: Emit = (e: string) => {};
 
-  constructor(ast: Expression) {
+  constructor(ast: Expression, emit: Emit) {
     this.ast = ast;
+    this.emit = emit;
   }
 
   transform() {
@@ -283,7 +287,7 @@ export class Transformer {
       );
     }
 
-    const jsonTag = {
+    const jsonTag: Record<string, string | (() => void)> = {
       [tagExpression.tagName]: tagExpression.body.map((element: any) => {
         if (element.type === ExpressionTypes.TAG)
           return this.transformTag(element);
@@ -293,9 +297,14 @@ export class Transformer {
       }),
     };
 
+    const onEventAttributes: Record<string, string>[] = [];
+
     for (const [key, value] of Object.entries(tagExpression.attributes)) {
-      // @ts-ignore
-      jsonTag[key] = value;
+      if (key.includes("on")) {
+        jsonTag[key] = () => this.emit(value as string);
+      } else {
+        jsonTag[key] = value as string;
+      }
     }
 
     return jsonTag;

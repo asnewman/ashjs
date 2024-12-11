@@ -257,13 +257,13 @@ Deno.test("transform basic", () => {
       {
         type: ExpressionTypes.TAG,
         tagName: "div",
-        attributes: { class: "myClass", id: "myDiv", onclick: "myeventname" },
+        attributes: { class: "myClass", id: "myDiv" },
         body: [{ type: ExpressionTypes.STRING_LITERAL, body: "hello world" }],
       },
     ],
   };
 
-  const transformer = new Transformer(expression);
+  const transformer = new Transformer(expression, (e: string) => {});
   const result = transformer.transform();
 
   assertEquals(result, [
@@ -271,12 +271,11 @@ Deno.test("transform basic", () => {
       div: ["hello world"],
       class: "myClass",
       id: "myDiv",
-      onclick: "myeventname",
     },
   ]);
 });
 
-Deno.test.only("transform nested", () => {
+Deno.test("transform nested", () => {
   const expression = {
     type: ExpressionTypes.ROOT,
     body: [
@@ -301,10 +300,15 @@ Deno.test.only("transform nested", () => {
     ],
   };
 
-  const transformer = new Transformer(expression);
-  const result = transformer.transform();
+  const fakeEmit = (e: string) => {
+    console.log(`Event emitted: ${e}`);
+  };
 
-  assertEquals(result, [
+  const transformer = new Transformer(expression, fakeEmit);
+  const result = transformer.transform() as any;
+
+  // Expected result
+  const expected = [
     {
       div: [
         "hello world",
@@ -312,12 +316,16 @@ Deno.test.only("transform nested", () => {
           div: ["good bye"],
           class: "myNestedClass",
           id: "myNestedDiv",
-          onclick: "mynestedeventname",
+          onclick: () => fakeEmit("mynestedeventname"),
         },
       ],
       class: "myClass",
       id: "myDiv",
-      onclick: "myeventname",
+      onclick: () => fakeEmit("myeventname"),
     },
-  ]);
+  ];
+
+  assertEquals(typeof result[0].div[1].onclick, "function");
+
+  assertEquals(typeof result[0].onclick, "function");
 });

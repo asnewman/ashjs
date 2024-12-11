@@ -1,4 +1,5 @@
 # ash.js Documentation
+
 ## Introduction
 
 ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications (stop using React for your blog).
@@ -77,8 +78,11 @@ The most basic application will look like this:
 Please remember that I am still building and experimenting with ash.js. If you have any ideas or suggestions, feel free to create an issue as I would love to hear them.
 
 ## Usage
+
 ### Targetted re-renders
+
 The simplest way to re-render your UI is by calling the `render()` function. This will re-render the entire page based on the URL and the `routes` you've provided. However, re-rendering the entire page is not performant, so instead, you can pass in an `id` into `render` to selectively re-render a portion of the UI. Make sure you attach an `id` field into the element you need to re-render, like so:
+
 ```
 // UI snippet with the `id` attribute attached
 div: [

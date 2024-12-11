@@ -43,7 +43,7 @@
         go: (path) => {
           const removedSlash = path.startsWith("/") ? path.substring(1) : path;
           window.location.hash = `#${removedSlash}`;
-        }
+        },
       };
       this.render();
       window.onhashchange = () => {

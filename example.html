@@ -10,18 +10,19 @@
     <div id="ashjs"></div>
     <script type="text/javascript">
       const routes = {
-        "/": (emit) => window.convert(`
+        "/": () => `
             -div(id="wrapper")
             --div(id="count")
             ---"Current count: ${store.count}"
-            ---button(onclick="increaseCount")
-            ----"Increase count"
-          `, emit),
-        "/item/:id": (emit, { urlInformation }) => [
-          {
-            div: `Showing item ${urlInformation.urlParams.id}`,
-          },
-        ],
+            --button(onclick="increaseCount")
+            ---"Increase count"
+            --button(onclick="goToCountPage")
+            ---"go to count page"
+          `,
+        "/count/:count": ({ urlInformation }) => `
+          -div(id="count")
+          --"Showing count ${urlInformation.urlParams.count}"
+        `
       };
 
       const store = {count: 0}
@@ -29,6 +30,9 @@
         "increaseCount": (_data, render) => {
           store.count += 1;
           render("count")
+        },
+        "goToCountPage": (_data, render, emit) => {
+          emit("go", `/count/${store.count}`)
         }
       };
 

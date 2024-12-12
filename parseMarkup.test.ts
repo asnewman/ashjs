@@ -342,14 +342,11 @@ Deno.test("counter example", () => {
   const tokens = tokenizer.tokenize()
   const parser = new Parser(tokens)
   const ast = parser.parse()
-  console.log(ast)
   const transformer = new Transformer(ast, (s: string) => {})
   const result = transformer.transform() as any;
 
-  console.log(result)
-
   assertEquals(result.length, 1)
   assertEquals(result[0].div.length, 2)
-  assertEquals(result[0].div[1].length, 1)
+  assertEquals(result[0].div[1].button.length, 1)
   assertEquals(result[0].div[1].button[0], "Increase count")
 })

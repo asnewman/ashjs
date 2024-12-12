@@ -133,6 +133,9 @@ export class Parser {
   cursor = 0;
   result: Expression = { type: ExpressionTypes.ROOT, body: [] as any[] };
   currDashLevel = 0;
+  // This variable tracks last seen expressions for each dash level to know
+  // where children should end up
+  currLevels: Record<number, Expression> = {}
 
   constructor(tokens: Token[]) {
     const tokensNoSpaces = tokens.filter(
@@ -151,16 +154,28 @@ export class Parser {
         }
       }
 
-      if (this.tokens[this.cursor].type === TokenTypes.SPACE) {
+      if (this.tokens[this.cursor].type === TokenTypes.TAG) {
+        const parsedTag = this.parseTag()
+        this.currLevels[this.currDashLevel] = parsedTag
+
+        if (this.currDashLevel === 1) {
+          this.result.body.push(parsedTag)
+        }
+        else {
+          this.currLevels[this.currDashLevel - 1].body.push(parsedTag)
+        }
         this.cursor++;
         continue;
       }
 
-      if (this.tokens[this.cursor].type === TokenTypes.TAG) {
-        this.result.body.push(this.parseTag());
+      if (this.tokens[this.cursor].type === TokenTypes.STRING) {
+        const newStringExpression: Expression = {
+          type: ExpressionTypes.STRING_LITERAL,
+          body: this.tokens[this.cursor].value,
+        };
+        this.currLevels[this.currDashLevel - 1].body.push(newStringExpression);
+        this.cursor++;
       }
-
-      this.cursor++;
     }
 
     return this.result;
@@ -202,50 +217,6 @@ export class Parser {
         const attributeValue = this.tokens[this.cursor].value;
 
         tagExpression.attributes[attributeName] = attributeValue;
-        this.cursor++;
-      }
-    }
-
-    this.cursor++; // should be R_PAREN
-
-    const childDashLevel = this.currDashLevel + 1;
-
-    // Go through all children
-    while (true) {
-      let lookAheadCursor = this.cursor;
-      this.currDashLevel = 0;
-
-      while (
-        this.tokens[lookAheadCursor] &&
-        this.tokens[lookAheadCursor].type === TokenTypes.DASH
-      ) {
-        this.currDashLevel++;
-        lookAheadCursor++;
-      }
-
-      if (childDashLevel !== this.currDashLevel) break;
-
-      // Calculate dashes to see if it belongs in the body
-      let dashesCnt = 0;
-      while (
-        this.cursor < this.tokens.length &&
-        this.tokens[this.cursor].type === TokenTypes.DASH
-      ) {
-        dashesCnt++;
-        this.cursor++;
-      }
-
-      if (this.cursor >= this.tokens.length) continue;
-
-      if (this.tokens[this.cursor].type === TokenTypes.STRING) {
-        const newStringExpression: Expression = {
-          type: ExpressionTypes.STRING_LITERAL,
-          body: this.tokens[this.cursor].value,
-        };
-        tagExpression.body.push(newStringExpression);
-        this.cursor++;
-      } else if (this.tokens[this.cursor].type === TokenTypes.TAG) {
-        tagExpression.body.push(this.parseTag());
         this.cursor++;
       }
     }

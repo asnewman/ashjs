@@ -111,6 +111,9 @@
     cursor = 0;
     result = { type: 0 /* ROOT */, body: [] };
     currDashLevel = 0;
+    // This variable tracks last seen expressions for each dash level to know
+    // where children should end up
+    currLevels = {};
     constructor(tokens) {
       const tokensNoSpaces = tokens.filter(
         (t) => t.type !== 8 /* SPACE */ && t.type !== 6 /* NEW_LINE */
@@ -126,14 +129,25 @@
             this.cursor++;
           }
         }
-        if (this.tokens[this.cursor].type === 8 /* SPACE */) {
+        if (this.tokens[this.cursor].type === 1 /* TAG */) {
+          const parsedTag = this.parseTag();
+          this.currLevels[this.currDashLevel] = parsedTag;
+          if (this.currDashLevel === 1) {
+            this.result.body.push(parsedTag);
+          } else {
+            this.currLevels[this.currDashLevel - 1].body.push(parsedTag);
+          }
           this.cursor++;
           continue;
         }
-        if (this.tokens[this.cursor].type === 1 /* TAG */) {
-          this.result.body.push(this.parseTag());
+        if (this.tokens[this.cursor].type === 5 /* STRING */) {
+          const newStringExpression = {
+            type: 3 /* STRING_LITERAL */,
+            body: this.tokens[this.cursor].value
+          };
+          this.currLevels[this.currDashLevel - 1].body.push(newStringExpression);
+          this.cursor++;
         }
-        this.cursor++;
       }
       return this.result;
     }
@@ -162,34 +176,6 @@
           }
           const attributeValue = this.tokens[this.cursor].value;
           tagExpression.attributes[attributeName] = attributeValue;
-          this.cursor++;
-        }
-      }
-      this.cursor++;
-      const childDashLevel = this.currDashLevel + 1;
-      while (true) {
-        let lookAheadCursor = this.cursor;
-        this.currDashLevel = 0;
-        while (this.tokens[lookAheadCursor] && this.tokens[lookAheadCursor].type === 0 /* DASH */) {
-          this.currDashLevel++;
-          lookAheadCursor++;
-        }
-        if (childDashLevel !== this.currDashLevel) break;
-        let dashesCnt = 0;
-        while (this.cursor < this.tokens.length && this.tokens[this.cursor].type === 0 /* DASH */) {
-          dashesCnt++;
-          this.cursor++;
-        }
-        if (this.cursor >= this.tokens.length) continue;
-        if (this.tokens[this.cursor].type === 5 /* STRING */) {
-          const newStringExpression = {
-            type: 3 /* STRING_LITERAL */,
-            body: this.tokens[this.cursor].value
-          };
-          tagExpression.body.push(newStringExpression);
-          this.cursor++;
-        } else if (this.tokens[this.cursor].type === 1 /* TAG */) {
-          tagExpression.body.push(this.parseTag());
           this.cursor++;
         }
       }
@@ -264,7 +250,8 @@
       const url = window.location.href;
       const urlInformation = getUrlInformation(Object.keys(this.routes), url);
       const route = urlInformation.matchedDefinition ?? urlInformation.path;
-      const tree = await this.routes[route](this.emit, { urlInformation });
+      const markup = await this.routes[route]({ urlInformation });
+      const tree = convert(markup, this.emit);
       if (id) {
         const newElement = findInTree(tree, id);
         if (newElement) {

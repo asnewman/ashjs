@@ -29,7 +29,8 @@ class Ash {
     const url = window.location.href;
     const urlInformation = getUrlInformation(Object.keys(this.routes), url);
     const route = urlInformation.matchedDefinition ?? urlInformation.path;
-    const tree = await this.routes[route](this.emit, { urlInformation });
+    const markup = await this.routes[route]({ urlInformation })
+    const tree = convert(markup, this.emit);
 
     if (id) {
       const newElement = findInTree(tree, id);

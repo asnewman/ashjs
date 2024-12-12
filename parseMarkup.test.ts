@@ -329,3 +329,27 @@ Deno.test("transform nested", () => {
 
   assertEquals(typeof result[0].onclick, "function");
 });
+
+Deno.test("counter example", () => {
+  const markup = `
+    -div(id="wrapper")
+    --div(id="count")
+    ---"Current count: 0"
+    --button(onclick="increaseCount")
+    ---"Increase count"
+  `
+  const tokenizer = new Tokenizer(markup)
+  const tokens = tokenizer.tokenize()
+  const parser = new Parser(tokens)
+  const ast = parser.parse()
+  console.log(ast)
+  const transformer = new Transformer(ast, (s: string) => {})
+  const result = transformer.transform() as any;
+
+  console.log(result)
+
+  assertEquals(result.length, 1)
+  assertEquals(result[0].div.length, 2)
+  assertEquals(result[0].div[1].length, 1)
+  assertEquals(result[0].div[1].button[0], "Increase count")
+})

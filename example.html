@@ -10,27 +10,27 @@
     <div id="ashjs"></div>
     <script type="text/javascript">
       const routes = {
-        "/": (emit) => [
-          {
-            div: "go to id 1",
-            onclick: () => emit("go", "/item/1"),
-          },
-          {
-            div: "go to id 2",
-            onclick: () => emit("go", "/item/2"),
-          },
-          {
-            div: "go to id 3",
-            onclick: () => emit("go", "/item/3"),
-          },
-        ],
+        "/": (emit) => window.convert(`
+            -div(id="wrapper")
+            --div(id="count")
+            ---"Current count: ${store.count}"
+            ---button(onclick="increaseCount")
+            ----"Increase count"
+          `, emit),
         "/item/:id": (emit, { urlInformation }) => [
           {
             div: `Showing item ${urlInformation.urlParams.id}`,
           },
         ],
       };
-      const events = {};
+
+      const store = {count: 0}
+      const events = {
+        "increaseCount": (_data, render) => {
+          store.count += 1;
+          render("count")
+        }
+      };
 
       const ash = new window.Ash(routes, events);
     </script>

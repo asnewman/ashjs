@@ -1,4 +1,5 @@
 import { getUrlInformation } from "./getUrlInformation";
+import { Tokenizer, Parser, Transformer } from "./parseMarkup";
 
 class Ash {
   routes = {};
@@ -72,7 +73,7 @@ class Ash {
       node.textContent = contentOrChildren;
     } else if (Array.isArray(contentOrChildren)) {
       contentOrChildren.forEach((childElement) => {
-        if (childElement === "string") {
+        if (typeof childElement === "string") {
           node.textContent += childElement;
           return;
         }
@@ -119,4 +120,19 @@ function findInTree(tree, id) {
   return null;
 }
 
+function convert(markup, emit) {
+  const tokenizer = new Tokenizer(markup); 
+  const tokens = tokenizer.tokenize()
+  const parser = new Parser(tokens)
+  const ast = parser.parse();
+  const transformer = new Transformer(ast, emit)
+  const result = transformer.transform();
+  console.log({
+    markup,
+    result
+  })
+  return result
+}
+
+window.convert = convert;
 window.Ash = Ash;

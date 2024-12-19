@@ -29,7 +29,7 @@ class Ash {
     const url = window.location.href;
     const urlInformation = getUrlInformation(Object.keys(this.routes), url);
     const route = urlInformation.matchedDefinition ?? urlInformation.path;
-    const markup = await this.routes[route]({ urlInformation })
+    const markup = await this.routes[route]({ urlInformation });
     const tree = convert(markup, this.emit);
 
     if (id) {
@@ -122,17 +122,13 @@ function findInTree(tree, id) {
 }
 
 function convert(markup, emit) {
-  const tokenizer = new Tokenizer(markup); 
-  const tokens = tokenizer.tokenize()
-  const parser = new Parser(tokens)
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  const parser = new Parser(tokens);
   const ast = parser.parse();
-  const transformer = new Transformer(ast, emit)
+  const transformer = new Transformer(ast, emit);
   const result = transformer.transform();
-  console.log({
-    markup,
-    result
-  })
-  return result
+  return result;
 }
 
 window.convert = convert;

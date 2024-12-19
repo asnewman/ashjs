@@ -171,11 +171,33 @@
             throw new Error("Expected = after attribute name");
           }
           this.cursor++;
-          if (this.tokens[this.cursor].type !== 5 /* STRING */) {
+          const isWord = this.tokens[this.cursor].type === 7 /* WORD */;
+          const isString = this.tokens[this.cursor].type === 5 /* STRING */;
+          if (!isWord && !isString) {
             throw new Error("Expected attribute value after =");
           }
-          const attributeValue = this.tokens[this.cursor].value;
-          tagExpression.attributes[attributeName] = attributeValue;
+          const funcName = this.tokens[this.cursor].value;
+          this.cursor++;
+          const isLParen = this.tokens[this.cursor].type === 3 /* L_PAREN */;
+          if (isString || isWord && !isLParen) {
+            tagExpression.attributes[attributeName] = funcName;
+            continue;
+          }
+          this.cursor++;
+          const attributeValue = { name: "", arg: "" };
+          if (this.tokens[this.cursor].type !== 7 /* WORD */) {
+            console.log(this.tokens[this.cursor]);
+            throw new Error("Expect arg after (");
+          }
+          tagExpression.attributes[attributeName] = {
+            type: 4 /* EVENT_FUNCTION */,
+            name: funcName,
+            arg: this.tokens[this.cursor].value
+          };
+          this.cursor++;
+          if (this.tokens[this.cursor].type !== 4 /* R_PAREN */) {
+            throw new Error("Expected ) after function arg");
+          }
           this.cursor++;
         }
       }
@@ -185,7 +207,7 @@
   var Transformer = class {
     ast = { type: 0 /* ROOT */, body: [] };
     cursor = 0;
-    emit = (e) => {
+    emit = (e, d) => {
     };
     constructor(ast, emit) {
       this.ast = ast;
@@ -217,7 +239,12 @@
       const onEventAttributes = [];
       for (const [key, value] of Object.entries(tagExpression.attributes)) {
         if (key.includes("on")) {
-          jsonTag[key] = () => this.emit(value);
+          if (typeof value === "object") {
+            const anyValue = value;
+            jsonTag[key] = () => this.emit(anyValue.name, anyValue.arg);
+          } else {
+            jsonTag[key] = () => this.emit(value);
+          }
         } else {
           jsonTag[key] = value;
         }
@@ -327,10 +354,6 @@
     const ast = parser.parse();
     const transformer = new Transformer(ast, emit);
     const result = transformer.transform();
-    console.log({
-      markup,
-      result
-    });
     return result;
   }
   window.convert = convert;

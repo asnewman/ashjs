@@ -337,16 +337,123 @@ Deno.test("counter example", () => {
     ---"Current count: 0"
     --button(onclick="increaseCount")
     ---"Increase count"
-  `
-  const tokenizer = new Tokenizer(markup)
-  const tokens = tokenizer.tokenize()
-  const parser = new Parser(tokens)
-  const ast = parser.parse()
+  `;
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  const parser = new Parser(tokens);
+  const ast = parser.parse();
+  const transformer = new Transformer(ast, (s: string) => {});
+  const result = transformer.transform() as any;
+
+  assertEquals(result.length, 1);
+  assertEquals(result[0].div.length, 2);
+  assertEquals(result[0].div[1].button.length, 1);
+  assertEquals(result[0].div[1].button[0], "Increase count");
+});
+
+Deno.test("pass in data to event", () => {
+  const markup = `
+-div(id="wrapper")
+--div(id="count")
+---"Current count: 0"
+--button(onclick=increaseCount(2))
+---"Increase count by two"
+`;
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  assertEquals(tokens, [
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.TAG, value: "div" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "id" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.STRING, value: "wrapper" },
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.TAG, value: "div" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "id" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.STRING, value: "count" },
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.STRING, value: "Current count: 0" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.TAG, value: "button" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "onclick" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.WORD, value: "increaseCount" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "2" },
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.STRING, value: "Increase count by two" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+  ]);
+
+  const parser = new Parser(tokens);
+  const ast = parser.parse();
+
+  const expectedAst = {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "div",
+        attributes: { id: "wrapper" },
+        body: [
+          {
+            type: ExpressionTypes.TAG,
+            tagName: "div",
+            attributes: {
+              id: "count",
+            },
+            body: [
+              {
+                type: ExpressionTypes.STRING_LITERAL,
+                body: "Current count: 0",
+              },
+            ],
+          },
+      {
+        type: ExpressionTypes.TAG,
+        tagName: "button",
+        attributes: {
+          onclick: {
+            type: ExpressionTypes.EVENT_FUNCTION,
+            name: "increaseCount",
+            arg: "2",
+          },
+        },
+        body: [
+          { type: ExpressionTypes.STRING_LITERAL, body: "Increase count by two" },
+        ],
+      },
+        ],
+      },
+    ],
+  };
+
+  assertEquals(ast, expectedAst);
+
   const transformer = new Transformer(ast, (s: string) => {})
   const result = transformer.transform() as any;
 
   assertEquals(result.length, 1)
   assertEquals(result[0].div.length, 2)
   assertEquals(result[0].div[1].button.length, 1)
-  assertEquals(result[0].div[1].button[0], "Increase count")
-})
+  assertEquals(result[0].div[1].button[0], "Increase count by two")
+});

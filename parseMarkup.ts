@@ -124,6 +124,7 @@ export enum ExpressionTypes {
   LEVEL,
   TAG,
   STRING_LITERAL,
+  EVENT_FUNCTION,
 }
 
 export type Expression = { type: ExpressionTypes } & any;
@@ -135,7 +136,7 @@ export class Parser {
   currDashLevel = 0;
   // This variable tracks last seen expressions for each dash level to know
   // where children should end up
-  currLevels: Record<number, Expression> = {}
+  currLevels: Record<number, Expression> = {};
 
   constructor(tokens: Token[]) {
     const tokensNoSpaces = tokens.filter(
@@ -155,14 +156,13 @@ export class Parser {
       }
 
       if (this.tokens[this.cursor].type === TokenTypes.TAG) {
-        const parsedTag = this.parseTag()
-        this.currLevels[this.currDashLevel] = parsedTag
+        const parsedTag = this.parseTag();
+        this.currLevels[this.currDashLevel] = parsedTag;
 
         if (this.currDashLevel === 1) {
-          this.result.body.push(parsedTag)
-        }
-        else {
-          this.currLevels[this.currDashLevel - 1].body.push(parsedTag)
+          this.result.body.push(parsedTag);
+        } else {
+          this.currLevels[this.currDashLevel - 1].body.push(parsedTag);
         }
         this.cursor++;
         continue;
@@ -210,13 +210,42 @@ export class Parser {
         }
 
         this.cursor++;
-        if (this.tokens[this.cursor].type !== TokenTypes.STRING) {
+        const isWord = this.tokens[this.cursor].type === TokenTypes.WORD;
+        const isString = this.tokens[this.cursor].type === TokenTypes.STRING;
+        if (!isWord && !isString) {
           throw new Error("Expected attribute value after =");
         }
 
-        const attributeValue = this.tokens[this.cursor].value;
+        const funcName = this.tokens[this.cursor].value;
 
-        tagExpression.attributes[attributeName] = attributeValue;
+        this.cursor++;
+
+        const isLParen = this.tokens[this.cursor].type === TokenTypes.L_PAREN;
+
+        if (isString || (isWord && !isLParen)) {
+          tagExpression.attributes[attributeName] = funcName;
+          continue;
+        }
+
+        this.cursor++;
+        const attributeValue = { name: "", arg: "" };
+
+        if (this.tokens[this.cursor].type !== TokenTypes.WORD) {
+          console.log(this.tokens[this.cursor]);
+          throw new Error("Expect arg after (");
+        }
+
+        tagExpression.attributes[attributeName] = {
+          type: ExpressionTypes.EVENT_FUNCTION,
+          name: funcName,
+          arg: this.tokens[this.cursor].value,
+        };
+
+        this.cursor++;
+        if (this.tokens[this.cursor].type !== TokenTypes.R_PAREN) {
+          throw new Error("Expected ) after function arg");
+        }
+
         this.cursor++;
       }
     }
@@ -225,12 +254,12 @@ export class Parser {
   }
 }
 
-type Emit = (eventName: string) => void;
+type Emit = (eventName: string, data?: any) => void;
 
 export class Transformer {
   ast: Expression = { type: ExpressionTypes.ROOT, body: [] as any[] };
   cursor = 0;
-  emit: Emit = (e: string) => {};
+  emit: Emit = (e: string, d?: any) => {};
 
   constructor(ast: Expression, emit: Emit) {
     this.ast = ast;
@@ -272,7 +301,13 @@ export class Transformer {
 
     for (const [key, value] of Object.entries(tagExpression.attributes)) {
       if (key.includes("on")) {
-        jsonTag[key] = () => this.emit(value as string);
+        if (typeof value === "object") {
+          const anyValue = value as any
+          jsonTag[key] = () => this.emit(anyValue.name, anyValue.arg)
+        }
+        else {
+          jsonTag[key] = () => this.emit(value as string);
+        }
       } else {
         jsonTag[key] = value as string;
       }

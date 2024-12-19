@@ -16,24 +16,36 @@
             ---"Current count: ${store.count}"
             --button(onclick="increaseCount")
             ---"Increase count"
+            --button(onclick=increaseCountBy(2))
+            ---"Increase count by two"
             --button(onclick="goToCountPage")
             ---"go to count page"
           `,
         "/count/:count": ({ urlInformation }) => `
           -div(id="count")
           --"Showing count ${urlInformation.urlParams.count}"
-        `
+        `,
       };
 
-      const store = {count: 0}
+      const store = { count: 0 };
       const events = {
-        "increaseCount": (_data, render) => {
+        increaseCount: (_data, render) => {
           store.count += 1;
-          render("count")
+          render("count");
         },
-        "goToCountPage": (_data, render, emit) => {
-          emit("go", `/count/${store.count}`)
-        }
+        increaseCountBy: (data, render) => {
+          const byValue = parseInt(data)
+          if (isNaN(byValue)) {
+            return;
+          }
+
+          store.count += byValue;
+
+          render("count");
+        },
+        goToCountPage: (_data, render, emit) => {
+          emit("go", `/count/${store.count}`);
+        },
       };
 
       const ash = new window.Ash(routes, events);

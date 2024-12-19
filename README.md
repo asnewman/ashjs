@@ -98,4 +98,5 @@ div: [
 ```
 
 ## Development
+
 Build command: `esbuild main.js --bundle --outfile=index.js`

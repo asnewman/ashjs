@@ -2,14 +2,16 @@
 
 ## Introduction
 
-ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications (stop using React for your blog).
+ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications.
 
 Core concepts that I am trying to solve/experiment with:
 
-1. Eliminate HTML syntax (I find it not ergonomic)
-2. Tell the engine when to re-render what (the auto-rerendering paradigm was a mistake)
-3. A global, mutable store is fine (until I'm proven otherwise)
-4. Vanilla JavaScript is beautiful and should not be seen as an escape hatch
+1. Create an alternative syntax to HTML/JSX
+2. Imperative engine re-rendering
+3. A global, mutable storage
+4. Event based action system
+
+Some of these bullets go against conventional programming best practices. However, my hypothesis is, they make sense and allow for a better programming experience in a small-project setting. For more information around my thought process, please read my blog post [Question Best Practices](https://ajkprojects.com/questionbestpractices.html)
 
 ## Installation
 
@@ -27,10 +29,10 @@ Alternatively, you can copy and paste the source code for ash.js into your proje
 ## Getting Started
 
 To build an application with ash.js, you need to:
-
-    Define routes: Map URL paths to functions that return component trees.
-    Define events: Map event names to business logic that update your UI.
-    Initialize the Ash instance: Pass the routes and events to Ash.
+- Define routes: Map URL paths to functions that return component trees.
+- ashjs markup: Write UI code using ashjs's simple markup syntax.
+- Define events: Map event names to business logic that update your UI.
+- Initialize the Ash instance: Pass the routes and events to Ash.
 
 The most basic application will look like this:
 
@@ -50,21 +52,18 @@ The most basic application will look like this:
       }
 
       const routes = {
-        "/": (emit) => {
-          return [
-            {
-              div: [
-                {p: store.showGoodbye ? "Bye!" : "Welcome to Ash.js!"},
-                {button: "Good bye", onclick: () => emit("bye")}
-              ]
-            },
-          ]
+        "/": () => `
+          -div()
+          --p()
+          ---"${store.showBye ? "Bye" : "Welcome to Ash.js!"}"
+          --button(onclick="bye")
+          ---"Goodbye"
+          `
         }
-      }
 
       const events = {
         "bye": (data, render) => {
-          store.showGoodbye = true;
+          store.showBye = true;
           render()
         }
       }
@@ -85,14 +84,17 @@ The simplest way to re-render your UI is by calling the `render()` function. Thi
 
 ```
 // UI snippet with the `id` attribute attached
-div: [
-  {p: store.showGoodbye ? "Bye!" : "Welcome to Ash.js!", id: "message"},
-  {button: "Good bye", onclick: () => emit("bye")}
-]
+`
+-div()
+--p(id="message")
+---"${store.showBye ? "Bye" : "Welcome to Ash.js!"}"
+--button(onclick="bye")
+---"Goodbye"
+`
 
 // Event snippet to only re-render the displayed message
 "bye": (data, render) => {
-  store.showGoodbye = true;
+  store.showBye = true;
   render("message")
 }
 ```

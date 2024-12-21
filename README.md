@@ -42,7 +42,7 @@ The most basic application will look like this:
   <head>
     <meta charset="UTF-8" />
     <title>Example</title>
-    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.2/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.3/index.js"></script>
   </head>
   <body class="">
     <div id="ashjs"></div>

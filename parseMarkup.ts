@@ -230,7 +230,10 @@ export class Parser {
         this.cursor++;
         const attributeValue = { name: "", arg: "" };
 
-        if (this.tokens[this.cursor].type !== TokenTypes.WORD) {
+        if (
+          this.tokens[this.cursor].type !== TokenTypes.WORD &&
+          this.tokens[this.cursor].type !== TokenTypes.STRING
+        ) {
           console.log(this.tokens[this.cursor]);
           throw new Error("Expect arg after (");
         }
@@ -302,10 +305,9 @@ export class Transformer {
     for (const [key, value] of Object.entries(tagExpression.attributes)) {
       if (key.includes("on")) {
         if (typeof value === "object") {
-          const anyValue = value as any
-          jsonTag[key] = () => this.emit(anyValue.name, anyValue.arg)
-        }
-        else {
+          const anyValue = value as any;
+          jsonTag[key] = () => this.emit(anyValue.name, anyValue.arg);
+        } else {
           jsonTag[key] = () => this.emit(value as string);
         }
       } else {

@@ -29,6 +29,7 @@ Alternatively, you can copy and paste the source code for ash.js into your proje
 ## Getting Started
 
 To build an application with ash.js, you need to:
+
 - Define routes: Map URL paths to functions that return component trees.
 - ashjs markup: Write UI code using ashjs's simple markup syntax.
 - Define events: Map event names to business logic that update your UI.
@@ -42,7 +43,7 @@ The most basic application will look like this:
   <head>
     <meta charset="UTF-8" />
     <title>Example</title>
-    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.3/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.4/index.js"></script>
   </head>
   <body class="">
     <div id="ashjs"></div>

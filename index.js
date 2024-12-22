@@ -95,7 +95,10 @@
     tokenizeQuote() {
       this.cursor++;
       const strArr = [];
-      while (this.markup[this.cursor] !== '"' && this.cursor < this.markup.length) {
+      while (
+        this.markup[this.cursor] !== '"' &&
+        this.cursor < this.markup.length
+      ) {
         strArr.push(this.markup[this.cursor]);
         this.cursor++;
       }
@@ -103,7 +106,15 @@
       this.cursor++;
     }
     isNotSymbol() {
-      return this.markup[this.cursor] !== " " && this.markup[this.cursor] !== "-" && this.markup[this.cursor] !== "=" && this.markup[this.cursor] !== "(" && this.markup[this.cursor] !== ")" && this.markup[this.cursor] !== "\n" && this.cursor < this.markup.length;
+      return (
+        this.markup[this.cursor] !== " " &&
+        this.markup[this.cursor] !== "-" &&
+        this.markup[this.cursor] !== "=" &&
+        this.markup[this.cursor] !== "(" &&
+        this.markup[this.cursor] !== ")" &&
+        this.markup[this.cursor] !== "\n" &&
+        this.cursor < this.markup.length
+      );
     }
   };
   var Parser = class {
@@ -116,7 +127,7 @@
     currLevels = {};
     constructor(tokens) {
       const tokensNoSpaces = tokens.filter(
-        (t) => t.type !== 8 /* SPACE */ && t.type !== 6 /* NEW_LINE */
+        (t) => t.type !== 8 /* SPACE */ && t.type !== 6 /* NEW_LINE */,
       );
       this.tokens = tokensNoSpaces;
     }
@@ -143,9 +154,11 @@
         if (this.tokens[this.cursor].type === 5 /* STRING */) {
           const newStringExpression = {
             type: 3 /* STRING_LITERAL */,
-            body: this.tokens[this.cursor].value
+            body: this.tokens[this.cursor].value,
           };
-          this.currLevels[this.currDashLevel - 1].body.push(newStringExpression);
+          this.currLevels[this.currDashLevel - 1].body.push(
+            newStringExpression,
+          );
           this.cursor++;
         }
       }
@@ -156,12 +169,15 @@
         type: 2 /* TAG */,
         tagName: this.tokens[this.cursor].value,
         attributes: {},
-        body: []
+        body: [],
       };
       this.cursor++;
       if (this.tokens[this.cursor].type === 3 /* L_PAREN */) {
         this.cursor++;
-        while (this.tokens[this.cursor].type !== 4 /* R_PAREN */ && this.cursor < this.tokens.length) {
+        while (
+          this.tokens[this.cursor].type !== 4 /* R_PAREN */ &&
+          this.cursor < this.tokens.length
+        ) {
           if (this.tokens[this.cursor].type !== 7 /* WORD */) {
             throw new Error("Expected attribute for tag");
           }
@@ -171,15 +187,15 @@
             throw new Error("Expected = after attribute name");
           }
           this.cursor++;
-          const isWord = this.tokens[this.cursor].type === 7 /* WORD */;
-          const isString = this.tokens[this.cursor].type === 5 /* STRING */;
+          const isWord = this.tokens[this.cursor].type === 7; /* WORD */
+          const isString = this.tokens[this.cursor].type === 5; /* STRING */
           if (!isWord && !isString) {
             throw new Error("Expected attribute value after =");
           }
           const funcName = this.tokens[this.cursor].value;
           this.cursor++;
-          const isLParen = this.tokens[this.cursor].type === 3 /* L_PAREN */;
-          if (isString || isWord && !isLParen) {
+          const isLParen = this.tokens[this.cursor].type === 3; /* L_PAREN */
+          if (isString || (isWord && !isLParen)) {
             tagExpression.attributes[attributeName] = funcName;
             continue;
           }
@@ -192,7 +208,7 @@
           tagExpression.attributes[attributeName] = {
             type: 4 /* EVENT_FUNCTION */,
             name: funcName,
-            arg: this.tokens[this.cursor].value
+            arg: this.tokens[this.cursor].value,
           };
           this.cursor++;
           if (this.tokens[this.cursor].type !== 4 /* R_PAREN */) {
@@ -207,8 +223,7 @@
   var Transformer = class {
     ast = { type: 0 /* ROOT */, body: [] };
     cursor = 0;
-    emit = (e, d) => {
-    };
+    emit = (e, d) => {};
     constructor(ast, emit) {
       this.ast = ast;
       this.emit = emit;
@@ -225,16 +240,14 @@
     transformTag(tagExpression) {
       if (tagExpression.type !== 2 /* TAG */) {
         throw new Error(
-          "Expected tag expression, instead received: " + tagExpression.type
+          "Expected tag expression, instead received: " + tagExpression.type,
         );
       }
       const jsonTag = {
         [tagExpression.tagName]: tagExpression.body.map((element) => {
-          if (element.type === 2 /* TAG */)
-            return this.transformTag(element);
-          if (element.type === 3 /* STRING_LITERAL */)
-            return element.body;
-        })
+          if (element.type === 2 /* TAG */) return this.transformTag(element);
+          if (element.type === 3 /* STRING_LITERAL */) return element.body;
+        }),
       };
       const onEventAttributes = [];
       for (const [key, value] of Object.entries(tagExpression.attributes)) {
@@ -266,7 +279,7 @@
         go: (path) => {
           const removedSlash = path.startsWith("/") ? path.substring(1) : path;
           window.location.hash = `#${removedSlash}`;
-        }
+        },
       };
       this.render();
       window.onhashchange = () => {

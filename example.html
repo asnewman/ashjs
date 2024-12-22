@@ -14,7 +14,7 @@
             -div(id="wrapper")
             --div(id="count")
             ---"Current count: ${store.count}"
-            --button(onclick="increaseCount")
+            --button(onclick=increaseCountBy(1))
             ---"Increase count"
             --button(onclick=increaseCountBy(2))
             ---"Increase count by two"
@@ -29,12 +29,8 @@
 
       const store = { count: 0 };
       const events = {
-        increaseCount: (_data, render) => {
-          store.count += 1;
-          render("count");
-        },
         increaseCountBy: (data, render) => {
-          const byValue = parseInt(data)
+          const byValue = parseInt(data);
           if (isNaN(byValue)) {
             return;
           }

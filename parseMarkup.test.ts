@@ -428,20 +428,23 @@ Deno.test("pass in data to event", () => {
               },
             ],
           },
-      {
-        type: ExpressionTypes.TAG,
-        tagName: "button",
-        attributes: {
-          onclick: {
-            type: ExpressionTypes.EVENT_FUNCTION,
-            name: "increaseCount",
-            arg: "2",
+          {
+            type: ExpressionTypes.TAG,
+            tagName: "button",
+            attributes: {
+              onclick: {
+                type: ExpressionTypes.EVENT_FUNCTION,
+                name: "increaseCount",
+                arg: "2",
+              },
+            },
+            body: [
+              {
+                type: ExpressionTypes.STRING_LITERAL,
+                body: "Increase count by two",
+              },
+            ],
           },
-        },
-        body: [
-          { type: ExpressionTypes.STRING_LITERAL, body: "Increase count by two" },
-        ],
-      },
         ],
       },
     ],
@@ -449,11 +452,30 @@ Deno.test("pass in data to event", () => {
 
   assertEquals(ast, expectedAst);
 
-  const transformer = new Transformer(ast, (s: string) => {})
+  const transformer = new Transformer(ast, (s: string) => {});
   const result = transformer.transform() as any;
 
-  assertEquals(result.length, 1)
-  assertEquals(result[0].div.length, 2)
-  assertEquals(result[0].div[1].button.length, 1)
-  assertEquals(result[0].div[1].button[0], "Increase count by two")
+  assertEquals(result.length, 1);
+  assertEquals(result[0].div.length, 2);
+  assertEquals(result[0].div[1].button.length, 1);
+  assertEquals(result[0].div[1].button[0], "Increase count by two");
+});
+
+Deno.test("String into event", () => {
+  const markup = `
+    -div()
+    --button(onclick=foo("hi"))
+    ---"Foo"
+  `;
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  const parser = new Parser(tokens);
+  const ast = parser.parse();
+  const transformer = new Transformer(ast, (s: string) => {});
+  const result = transformer.transform() as any;
+
+  assertEquals(result.length, 1);
+  assertEquals(result[0].div.length, 1);
+  assertEquals(result[0].div[0].button.length, 1);
+  assertEquals(result[0].div[0].button[0], "Foo");
 });

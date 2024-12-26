@@ -1,17 +1,116 @@
 const htmlTags = new Set([
-  "html", "head", "title", "base", "link", "meta", "style", "script", "noscript",
-  "body", "section", "nav", "article", "aside", "header", "footer", "address", "main",
-  "div", "p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "dl", "dt", "dd",
-  "figure", "figcaption", "blockquote", "pre", "hr", "br",
-  "a", "em", "strong", "small", "s", "cite", "q", "dfn", "abbr", "ruby", "rt", "rp",
-  "code", "var", "samp", "kbd", "sub", "sup", "i", "b", "u", "mark", "bdi", "bdo", "span",
-  "ins", "del",
-  "img", "iframe", "embed", "object", "param", "video", "audio", "source", "track",
-  "canvas", "map", "area", "svg", "math",
-  "table", "caption", "colgroup", "col", "tbody", "thead", "tfoot", "tr", "td", "th",
-  "form", "fieldset", "legend", "label", "input", "button", "select", "datalist", "optgroup",
-  "option", "textarea", "keygen", "output", "progress", "meter",
-  "details", "summary", "menu", "menuitem", "dialog", "script", "template", "slot"
+  "html",
+  "head",
+  "title",
+  "base",
+  "link",
+  "meta",
+  "style",
+  "script",
+  "noscript",
+  "body",
+  "section",
+  "nav",
+  "article",
+  "aside",
+  "header",
+  "footer",
+  "address",
+  "main",
+  "div",
+  "p",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "ul",
+  "ol",
+  "li",
+  "dl",
+  "dt",
+  "dd",
+  "figure",
+  "figcaption",
+  "blockquote",
+  "pre",
+  "hr",
+  "br",
+  "a",
+  "em",
+  "strong",
+  "small",
+  "s",
+  "cite",
+  "q",
+  "dfn",
+  "abbr",
+  "ruby",
+  "rt",
+  "rp",
+  "code",
+  "var",
+  "samp",
+  "kbd",
+  "sub",
+  "sup",
+  "i",
+  "b",
+  "u",
+  "mark",
+  "bdi",
+  "bdo",
+  "span",
+  "ins",
+  "del",
+  "img",
+  "iframe",
+  "embed",
+  "object",
+  "param",
+  "video",
+  "audio",
+  "source",
+  "track",
+  "canvas",
+  "map",
+  "area",
+  "svg",
+  "math",
+  "table",
+  "caption",
+  "colgroup",
+  "col",
+  "tbody",
+  "thead",
+  "tfoot",
+  "tr",
+  "td",
+  "th",
+  "form",
+  "fieldset",
+  "legend",
+  "label",
+  "input",
+  "button",
+  "select",
+  "datalist",
+  "optgroup",
+  "option",
+  "textarea",
+  "keygen",
+  "output",
+  "progress",
+  "meter",
+  "details",
+  "summary",
+  "menu",
+  "menuitem",
+  "dialog",
+  "script",
+  "template",
+  "slot",
 ]);
 
 export enum TokenTypes {
@@ -20,6 +119,8 @@ export enum TokenTypes {
   EQUAL,
   L_PAREN,
   R_PAREN,
+  L_CURLY,
+  R_CURLY,
   STRING,
   NEW_LINE,
   WORD,
@@ -66,6 +167,18 @@ export class Tokenizer {
         continue;
       }
 
+      if (this.markup[this.cursor] === "{") {
+        this.result.push({ type: TokenTypes.L_CURLY, value: "{" });
+        this.cursor++;
+        continue;
+      }
+
+      if (this.markup[this.cursor] === "}") {
+        this.result.push({ type: TokenTypes.R_CURLY, value: "}" });
+        this.cursor++;
+        continue;
+      }
+
       if (this.markup[this.cursor] === "\n") {
         this.result.push({ type: TokenTypes.NEW_LINE, value: "\n" });
         this.cursor++;
@@ -78,7 +191,10 @@ export class Tokenizer {
         continue;
       }
 
-      if (this.markup[this.cursor] === '"' || this.markup[this.cursor] === "'") {
+      if (
+        this.markup[this.cursor] === '"' ||
+        this.markup[this.cursor] === "'"
+      ) {
         this.tokenizeQuote();
         continue;
       }
@@ -105,7 +221,7 @@ export class Tokenizer {
   }
 
   tokenizeQuote() {
-    const startingQuoteSymbol = this.markup[this.cursor]
+    const startingQuoteSymbol = this.markup[this.cursor];
     this.cursor++;
     const strArr: string[] = [];
 
@@ -128,6 +244,8 @@ export class Tokenizer {
       this.markup[this.cursor] !== "=" &&
       this.markup[this.cursor] !== "(" &&
       this.markup[this.cursor] !== ")" &&
+      this.markup[this.cursor] !== "{" &&
+      this.markup[this.cursor] !== "}" &&
       this.markup[this.cursor] !== "\n" &&
       this.cursor < this.markup.length
     );
@@ -152,6 +270,8 @@ export class Parser {
   // This variable tracks last seen expressions for each dash level to know
   // where children should end up
   currLevels: Record<number, Expression> = {};
+  // A stack tracking any active curly brackets
+  activeCurly: number[] = [];
 
   constructor(tokens: Token[]) {
     const tokensNoSpaces = tokens.filter(
@@ -162,8 +282,25 @@ export class Parser {
 
   parse(): Expression {
     while (this.cursor < this.tokens.length) {
+      if (this.tokens[this.cursor].type === TokenTypes.L_CURLY) {
+        this.activeCurly.push(this.currDashLevel);
+        this.cursor++;
+        continue;
+      }
+
+      if (this.tokens[this.cursor].type === TokenTypes.R_CURLY) {
+        this.activeCurly.pop();
+        this.cursor++;
+        continue;
+      }
+
       if (this.tokens[this.cursor].type === TokenTypes.DASH) {
         this.currDashLevel = 0;
+
+        if (this.activeCurly.length > 0) {
+          this.currDashLevel = this.activeCurly[this.activeCurly.length - 1];
+        }
+
         while (this.tokens[this.cursor].type === TokenTypes.DASH) {
           this.currDashLevel++;
           this.cursor++;
@@ -240,19 +377,21 @@ export class Parser {
     if (token.type === TokenTypes.STRING) {
       const value = token.value;
       if (value.includes("(") && value[value.length - 1] === ")") {
-        const parts = value.split('(')
+        const parts = value.split("(");
         return {
           type: ExpressionTypes.EVENT_FUNCTION,
           name: parts[0],
-          arg: parts[1].replace(")", "")
-        }
-      }
-      else {
+          arg: parts[1].replace(")", ""),
+        };
+      } else {
         return token.value;
       }
     }
 
-    throw new Error("On event function must be a string. Instead found " + JSON.stringify(token))
+    throw new Error(
+      "On event function must be a string. Instead found " +
+        JSON.stringify(token),
+    );
   }
 }
 

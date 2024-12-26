@@ -43,7 +43,7 @@ The most basic application will look like this:
   <head>
     <meta charset="UTF-8" />
     <title>Example</title>
-    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.5/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.6/index.js"></script>
   </head>
   <body class="">
     <div id="ashjs"></div>
@@ -103,11 +103,37 @@ The simplest way to re-render your UI is by calling the `render()` function. Thi
 ### Passing Events Data
 
 Pass data to event handlers like so:
+
 ```
 -div()
 --"Current count: ${store.count}"
 --button(onclick='increaseCountBy("1")')
-``` 
+```
+
+### Nested Generator Function
+
+Often, it makes sense to use a helper function to build portions of UI that is reused in multiple places. For example:
+
+```
+function footer() {
+  return `
+    -div(id="footer")
+    --"Please contact me"
+  `
+}
+```
+
+To make sure the UI gets rendered at the approriate HTML level, use `{}` like so:
+
+```
+-div("root")
+// some content
+{ ${footer()} }
+```
+
+Here, even though `footer()` generates UI code at the same `-` level as `-div("root")`, the engine will properly nest the footer inside "root".
+
+For more details, please see https://github.com/asnewman/ashjs/issues/2.
 
 ## Development
 

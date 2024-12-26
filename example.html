@@ -30,7 +30,7 @@
       const store = { count: 0 };
       const events = {
         increaseCountBy: (rawData, render) => {
-          const data = JSON.parse(rawData)
+          const data = JSON.parse(rawData);
           const byValue = parseInt(data);
           if (isNaN(byValue)) {
             return;

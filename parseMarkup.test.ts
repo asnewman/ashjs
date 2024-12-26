@@ -476,3 +476,63 @@ Deno.test("String into event", () => {
   assertEquals(result[0].div[0].button.length, 1);
   assertEquals(result[0].div[0].button[0], "Foo");
 });
+
+Deno.test("Nesting marker", () => {
+  function genButton() {
+    return `
+      -button()
+      --"I am a button"
+    `;
+  }
+
+  function genButtonWrapper() {
+    return `
+      -div(id="wrapper")
+      {${genButton()}}
+    `;
+  }
+
+  const markup = `
+    -div(id="root")
+    {${genButtonWrapper()}}
+  `;
+
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  const parser = new Parser(tokens);
+  const ast = parser.parse();
+  assertEquals(ast, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        attributes: {
+          id: "root",
+        },
+        tagName: "div",
+        body: [
+          {
+            type: ExpressionTypes.TAG,
+            tagName: "div",
+            attributes: {
+              id: "wrapper",
+            },
+            body: [
+              {
+                type: ExpressionTypes.TAG,
+                tagName: "button",
+                attributes: {},
+                body: [
+                  {
+                    type: ExpressionTypes.STRING_LITERAL,
+                    body: "I am a button",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+});

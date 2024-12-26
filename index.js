@@ -184,7 +184,7 @@
           this.cursor++;
           continue;
         }
-        if (this.markup[this.cursor] === '"') {
+        if (this.markup[this.cursor] === '"' || this.markup[this.cursor] === "'") {
           this.tokenizeQuote();
           continue;
         }
@@ -206,9 +206,10 @@
       return this.result;
     }
     tokenizeQuote() {
+      const startingQuoteSymbol = this.markup[this.cursor];
       this.cursor++;
       const strArr = [];
-      while (this.markup[this.cursor] !== '"' && this.cursor < this.markup.length) {
+      while (this.markup[this.cursor] !== startingQuoteSymbol && this.cursor < this.markup.length) {
         strArr.push(this.markup[this.cursor]);
         this.cursor++;
       }
@@ -284,37 +285,28 @@
             throw new Error("Expected = after attribute name");
           }
           this.cursor++;
-          const isWord = this.tokens[this.cursor].type === 7 /* WORD */;
-          const isString = this.tokens[this.cursor].type === 5 /* STRING */;
-          if (!isWord && !isString) {
-            throw new Error("Expected attribute value after =");
-          }
-          const funcName = this.tokens[this.cursor].value;
-          this.cursor++;
-          const isLParen = this.tokens[this.cursor].type === 3 /* L_PAREN */;
-          if (isString || isWord && !isLParen) {
-            tagExpression.attributes[attributeName] = funcName;
-            continue;
-          }
-          this.cursor++;
-          const attributeValue = { name: "", arg: "" };
-          if (this.tokens[this.cursor].type !== 7 /* WORD */ && this.tokens[this.cursor].type !== 5 /* STRING */) {
-            console.log(this.tokens[this.cursor]);
-            throw new Error("Expect arg after (");
-          }
-          tagExpression.attributes[attributeName] = {
-            type: 4 /* EVENT_FUNCTION */,
-            name: funcName,
-            arg: this.tokens[this.cursor].value
-          };
-          this.cursor++;
-          if (this.tokens[this.cursor].type !== 4 /* R_PAREN */) {
-            throw new Error("Expected ) after function arg");
-          }
-          this.cursor++;
+          tagExpression.attributes[attributeName] = this.parseAttributeValue();
         }
       }
       return tagExpression;
+    }
+    parseAttributeValue() {
+      const token = this.tokens[this.cursor];
+      this.cursor++;
+      if (token.type === 5 /* STRING */) {
+        const value = token.value;
+        if (value.includes("(") && value[value.length - 1] === ")") {
+          const parts = value.split("(");
+          return {
+            type: 4 /* EVENT_FUNCTION */,
+            name: parts[0],
+            arg: parts[1].replace(")", "")
+          };
+        } else {
+          return token.value;
+        }
+      }
+      throw new Error("On event function must be a string. Instead found " + JSON.stringify(token));
     }
   };
   var Transformer = class {

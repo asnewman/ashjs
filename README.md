@@ -43,7 +43,7 @@ The most basic application will look like this:
   <head>
     <meta charset="UTF-8" />
     <title>Example</title>
-    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.4/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.5/index.js"></script>
   </head>
   <body class="">
     <div id="ashjs"></div>
@@ -79,7 +79,7 @@ Please remember that I am still building and experimenting with ash.js. If you h
 
 ## Usage
 
-### Targetted re-renders
+### Targetted Re-renders
 
 The simplest way to re-render your UI is by calling the `render()` function. This will re-render the entire page based on the URL and the `routes` you've provided. However, re-rendering the entire page is not performant, so instead, you can pass in an `id` into `render` to selectively re-render a portion of the UI. Make sure you attach an `id` field into the element you need to re-render, like so:
 
@@ -99,6 +99,15 @@ The simplest way to re-render your UI is by calling the `render()` function. Thi
   render("message")
 }
 ```
+
+### Passing Events Data
+
+Pass data to event handlers like so:
+```
+-div()
+--"Current count: ${store.count}"
+--button(onclick='increaseCountBy("1")')
+``` 
 
 ## Development
 

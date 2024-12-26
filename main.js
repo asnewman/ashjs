@@ -12,7 +12,8 @@ class Ash {
     this.routes = routes;
     this.events = {
       ...events,
-      go: (path) => {
+      go: (rawPath) => {
+        const path = JSON.parse(rawPath)
         const removedSlash = path.startsWith("/") ? path.substring(1) : path;
         window.location.hash = `#${removedSlash}`;
       },

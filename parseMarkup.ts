@@ -78,7 +78,7 @@ export class Tokenizer {
         continue;
       }
 
-      if (this.markup[this.cursor] === '"') {
+      if (this.markup[this.cursor] === '"' || this.markup[this.cursor] === "'") {
         this.tokenizeQuote();
         continue;
       }
@@ -105,11 +105,12 @@ export class Tokenizer {
   }
 
   tokenizeQuote() {
+    const startingQuoteSymbol = this.markup[this.cursor]
     this.cursor++;
     const strArr: string[] = [];
 
     while (
-      this.markup[this.cursor] !== '"' &&
+      this.markup[this.cursor] !== startingQuoteSymbol &&
       this.cursor < this.markup.length
     ) {
       strArr.push(this.markup[this.cursor]);
@@ -224,50 +225,34 @@ export class Parser {
         }
 
         this.cursor++;
-        const isWord = this.tokens[this.cursor].type === TokenTypes.WORD;
-        const isString = this.tokens[this.cursor].type === TokenTypes.STRING;
-        if (!isWord && !isString) {
-          throw new Error("Expected attribute value after =");
-        }
 
-        const funcName = this.tokens[this.cursor].value;
-
-        this.cursor++;
-
-        const isLParen = this.tokens[this.cursor].type === TokenTypes.L_PAREN;
-
-        if (isString || (isWord && !isLParen)) {
-          tagExpression.attributes[attributeName] = funcName;
-          continue;
-        }
-
-        this.cursor++;
-        const attributeValue = { name: "", arg: "" };
-
-        if (
-          this.tokens[this.cursor].type !== TokenTypes.WORD &&
-          this.tokens[this.cursor].type !== TokenTypes.STRING
-        ) {
-          console.log(this.tokens[this.cursor]);
-          throw new Error("Expect arg after (");
-        }
-
-        tagExpression.attributes[attributeName] = {
-          type: ExpressionTypes.EVENT_FUNCTION,
-          name: funcName,
-          arg: this.tokens[this.cursor].value,
-        };
-
-        this.cursor++;
-        if (this.tokens[this.cursor].type !== TokenTypes.R_PAREN) {
-          throw new Error("Expected ) after function arg");
-        }
-
-        this.cursor++;
+        tagExpression.attributes[attributeName] = this.parseAttributeValue();
       }
     }
 
     return tagExpression;
+  }
+
+  parseAttributeValue() {
+    const token = this.tokens[this.cursor];
+    this.cursor++;
+
+    if (token.type === TokenTypes.STRING) {
+      const value = token.value;
+      if (value.includes("(") && value[value.length - 1] === ")") {
+        const parts = value.split('(')
+        return {
+          type: ExpressionTypes.EVENT_FUNCTION,
+          name: parts[0],
+          arg: parts[1].replace(")", "")
+        }
+      }
+      else {
+        return token.value;
+      }
+    }
+
+    throw new Error("On event function must be a string. Instead found " + JSON.stringify(token))
   }
 }
 

@@ -356,7 +356,7 @@ Deno.test("pass in data to event", () => {
 -div(id="wrapper")
 --div(id="count")
 ---"Current count: 0"
---button(onclick=increaseCount(2))
+--button(onclick='increaseCount("2")')
 ---"Increase count by two"
 `;
   const tokenizer = new Tokenizer(markup);
@@ -391,10 +391,7 @@ Deno.test("pass in data to event", () => {
     { type: TokenTypes.L_PAREN, value: "(" },
     { type: TokenTypes.WORD, value: "onclick" },
     { type: TokenTypes.EQUAL, value: "=" },
-    { type: TokenTypes.WORD, value: "increaseCount" },
-    { type: TokenTypes.L_PAREN, value: "(" },
-    { type: TokenTypes.WORD, value: "2" },
-    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.STRING, value: 'increaseCount("2")' },
     { type: TokenTypes.R_PAREN, value: ")" },
     { type: TokenTypes.NEW_LINE, value: "\n" },
     { type: TokenTypes.DASH, value: "-" },
@@ -435,7 +432,7 @@ Deno.test("pass in data to event", () => {
               onclick: {
                 type: ExpressionTypes.EVENT_FUNCTION,
                 name: "increaseCount",
-                arg: "2",
+                arg: '"2"',
               },
             },
             body: [
@@ -464,7 +461,7 @@ Deno.test("pass in data to event", () => {
 Deno.test("String into event", () => {
   const markup = `
     -div()
-    --button(onclick=foo("hi"))
+    --button(onclick='foo("hi")')
     ---"Foo"
   `;
   const tokenizer = new Tokenizer(markup);

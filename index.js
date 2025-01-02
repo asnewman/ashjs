@@ -286,6 +286,9 @@
           };
           this.currLevels[this.currDashLevel - 1].body.push(newStringExpression);
           this.cursor++;
+        } else {
+          console.log({ tokens: this.tokens });
+          throw new Error(`Unexpected token ${JSON.stringify(this.tokens[this.cursor])} (token # ${this.cursor})`);
         }
       }
       return this.result;

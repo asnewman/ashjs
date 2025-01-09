@@ -305,6 +305,7 @@ export class Parser {
           this.currDashLevel++;
           this.cursor++;
         }
+        continue;
       }
 
       if (this.tokens[this.cursor].type === TokenTypes.TAG) {

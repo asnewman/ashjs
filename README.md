@@ -43,7 +43,7 @@ The most basic application will look like this:
   <head>
     <meta charset="UTF-8" />
     <title>Example</title>
-    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.9/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/asnewman/ashjs@v0.0.10/index.js"></script>
   </head>
   <body class="">
     <div id="ashjs"></div>
@@ -126,14 +126,17 @@ function footer() {
 To make sure the UI gets rendered at the approriate HTML level, use `{}` like so:
 
 ```
--div("root")
-// some content
+-div(id="root")
 { ${footer()} }
 ```
 
-Here, even though `footer()` generates UI code at the same `-` level as `-div("root")`, the engine will properly nest the footer inside "root".
+Here, even though `footer()` generates UI code at the same `-` level as `-div(id="root")`, the engine will properly nest the footer inside "root". If you need manually assign a level because of an in between sibling node, manually pass in dashes before the left curly like so:
 
-For more details, please see https://github.com/asnewman/ashjs/issues/2.
+```
+-div(id="root")
+--div(id="thisShouldHaveNoChildren")
+-{ ${footer()} }
+```
 
 ## Development
 

@@ -267,6 +267,7 @@
             this.currDashLevel++;
             this.cursor++;
           }
+          continue;
         }
         if (this.tokens[this.cursor].type === 1 /* TAG */) {
           const parsedTag = this.parseTag();

@@ -149,6 +149,7 @@
     cursor = 0;
     markup = "";
     result = [];
+    inAttributes = false;
     constructor(markup) {
       this.markup = markup;
     }
@@ -167,11 +168,13 @@
         if (this.markup[this.cursor] === "(") {
           this.result.push({ type: 3 /* L_PAREN */, value: "(" });
           this.cursor++;
+          this.inAttributes = true;
           continue;
         }
         if (this.markup[this.cursor] === ")") {
           this.result.push({ type: 4 /* R_PAREN */, value: ")" });
           this.cursor++;
+          this.inAttributes = false;
           continue;
         }
         if (this.markup[this.cursor] === "{") {
@@ -204,7 +207,7 @@
           this.cursor++;
         }
         let word = wordArr.join("");
-        if (htmlTags.has(word)) {
+        if (htmlTags.has(word) && !this.inAttributes) {
           const tokenizedHtmlTag = { type: 1 /* TAG */, value: word };
           this.result.push(tokenizedHtmlTag);
           continue;

@@ -136,6 +136,7 @@ export class Tokenizer {
   cursor = 0;
   markup = "";
   result: Token[] = [];
+  inAttributes = false;
 
   constructor(markup: string) {
     this.markup = markup;
@@ -158,12 +159,14 @@ export class Tokenizer {
       if (this.markup[this.cursor] === "(") {
         this.result.push({ type: TokenTypes.L_PAREN, value: "(" });
         this.cursor++;
+        this.inAttributes = true;
         continue;
       }
 
       if (this.markup[this.cursor] === ")") {
         this.result.push({ type: TokenTypes.R_PAREN, value: ")" });
         this.cursor++;
+        this.inAttributes = false;
         continue;
       }
 
@@ -208,7 +211,7 @@ export class Tokenizer {
 
       let word = wordArr.join("");
 
-      if (htmlTags.has(word)) {
+      if (htmlTags.has(word) && !this.inAttributes) {
         const tokenizedHtmlTag = { type: TokenTypes.TAG, value: word };
         this.result.push(tokenizedHtmlTag);
         continue;
@@ -233,7 +236,7 @@ export class Tokenizer {
         strArr.push(this.markup[this.cursor]);
         this.cursor++;
       }
-      
+
       strArr.push(this.markup[this.cursor]);
       this.cursor++;
     }

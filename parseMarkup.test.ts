@@ -630,3 +630,50 @@ Deno.test("Parse escaped strings correctly", () => {
     { type: TokenTypes.NEW_LINE, value: "\n" },
   ])
 })
+
+Deno.test("Ignore hyphens in strings during parsing", () => {
+  const markup = `
+-div(style="display: inline-block;")
+--"hello world"
+`
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+
+  assertEquals(tokens, [
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.TAG, value: "div" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "style" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.STRING, value: "display: inline-block;"},
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.STRING, value: "hello world" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+  ])
+
+  const parser = new Parser(tokens);
+  const ast = parser.parse();
+
+  assertEquals(ast, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        attributes: {
+          style: "display: inline-block;",
+        },
+        tagName: "div",
+        body: [
+          {
+            type: ExpressionTypes.STRING_LITERAL,
+            body: "hello world",
+          },
+        ],
+      },
+    ],
+  });
+})

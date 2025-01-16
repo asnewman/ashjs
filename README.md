@@ -110,6 +110,12 @@ Pass data to event handlers like so:
 --button(onclick='increaseCountBy("1")')
 ```
 
+Or if you need to pass more complex data:
+```
+-div(onclick='foo("[\"bar\", \"biz\"]")')
+--"hello world"
+```
+
 ### Nested Generator Function
 
 Often, it makes sense to use a helper function to build portions of UI that is reused in multiple places. For example:

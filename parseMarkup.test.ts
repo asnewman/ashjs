@@ -605,3 +605,28 @@ Deno.test("Dashed nesting marker", () => {
     ],
   });
 });
+
+Deno.test("Parse escaped strings correctly", () => {
+  const markup = `
+-div(onclick='foo("[\"bar\", \"biz\"]")')
+--"hello world"
+`
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+
+  assertEquals(tokens, [
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.TAG, value: "div" },
+    { type: TokenTypes.L_PAREN, value: "(" },
+    { type: TokenTypes.WORD, value: "onclick" },
+    { type: TokenTypes.EQUAL, value: "=" },
+    { type: TokenTypes.STRING, value:  'foo("[\"bar\", \"biz\"]")'},
+    { type: TokenTypes.R_PAREN, value: ")" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.DASH, value: "-" },
+    { type: TokenTypes.STRING, value: "hello world" },
+    { type: TokenTypes.NEW_LINE, value: "\n" },
+  ])
+})

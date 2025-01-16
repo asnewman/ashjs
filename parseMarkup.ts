@@ -229,6 +229,11 @@ export class Tokenizer {
       this.markup[this.cursor] !== startingQuoteSymbol &&
       this.cursor < this.markup.length
     ) {
+      if (this.markup[this.cursor] === "/") {
+        strArr.push(this.markup[this.cursor]);
+        this.cursor++;
+      }
+      
       strArr.push(this.markup[this.cursor]);
       this.cursor++;
     }

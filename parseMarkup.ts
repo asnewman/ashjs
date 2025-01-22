@@ -111,6 +111,7 @@ const htmlTags = new Set([
   "script",
   "template",
   "slot",
+  "g",
 ]);
 
 export enum TokenTypes {
@@ -204,7 +205,7 @@ export class Tokenizer {
 
       let wordArr: string[] = [];
 
-      while (this.isNotSymbol()) {
+      while (this.isNotWordSymbol()) {
         wordArr.push(this.markup[this.cursor]);
         this.cursor++;
       }
@@ -245,10 +246,9 @@ export class Tokenizer {
     this.cursor++;
   }
 
-  isNotSymbol() {
+  isNotWordSymbol() {
     return (
       this.markup[this.cursor] !== " " &&
-      this.markup[this.cursor] !== "-" &&
       this.markup[this.cursor] !== "=" &&
       this.markup[this.cursor] !== "(" &&
       this.markup[this.cursor] !== ")" &&

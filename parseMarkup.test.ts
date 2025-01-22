@@ -677,3 +677,39 @@ Deno.test("Ignore hyphens in strings during parsing", () => {
     ],
   });
 })
+
+Deno.test("Testing dash attributes", () => {
+  const markup = `
+    -svg(fill="#c5c5c5")
+    --g(stroke-width="0")
+  `
+
+  
+  const tokenizer = new Tokenizer(markup);
+  const tokens = tokenizer.tokenize();
+  const parser = new Parser(tokens);
+  const ast = parser.parse();
+
+  assertEquals(ast, {
+    type: ExpressionTypes.ROOT,
+    body: [
+      {
+        type: ExpressionTypes.TAG,
+        attributes: {
+          fill: "#c5c5c5",
+        },
+        tagName: "svg",
+        body: [
+          {
+            type: ExpressionTypes.TAG,
+            attributes: {
+              "stroke-width": "0"
+            },
+            tagName: "g",
+            body: [],
+          },
+        ],
+      },
+    ],
+  });
+})

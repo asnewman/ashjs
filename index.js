@@ -143,7 +143,8 @@
     "dialog",
     "script",
     "template",
-    "slot"
+    "slot",
+    "g"
   ]);
   var Tokenizer = class {
     cursor = 0;
@@ -202,7 +203,7 @@
           continue;
         }
         let wordArr = [];
-        while (this.isNotSymbol()) {
+        while (this.isNotWordSymbol()) {
           wordArr.push(this.markup[this.cursor]);
           this.cursor++;
         }
@@ -233,8 +234,8 @@
       this.result.push({ type: 7 /* STRING */, value: strArr.join("") });
       this.cursor++;
     }
-    isNotSymbol() {
-      return this.markup[this.cursor] !== " " && this.markup[this.cursor] !== "-" && this.markup[this.cursor] !== "=" && this.markup[this.cursor] !== "(" && this.markup[this.cursor] !== ")" && this.markup[this.cursor] !== "{" && this.markup[this.cursor] !== "}" && this.markup[this.cursor] !== "\n" && this.cursor < this.markup.length;
+    isNotWordSymbol() {
+      return this.markup[this.cursor] !== " " && this.markup[this.cursor] !== "=" && this.markup[this.cursor] !== "(" && this.markup[this.cursor] !== ")" && this.markup[this.cursor] !== "{" && this.markup[this.cursor] !== "}" && this.markup[this.cursor] !== "\n" && this.cursor < this.markup.length;
     }
   };
   var Parser = class {

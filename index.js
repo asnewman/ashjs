@@ -144,7 +144,8 @@
     "script",
     "template",
     "slot",
-    "g"
+    "g",
+    "path"
   ]);
   var Tokenizer = class {
     cursor = 0;

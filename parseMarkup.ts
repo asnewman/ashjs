@@ -112,6 +112,7 @@ const htmlTags = new Set([
   "template",
   "slot",
   "g",
+  "path",
 ]);
 
 export enum TokenTypes {

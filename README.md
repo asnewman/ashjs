@@ -144,6 +144,39 @@ Here, even though `footer()` generates UI code at the same `-` level as `-div(id
 -{ ${footer()} }
 ```
 
+### Router
+
+#### Route parameters
+
+You define route parameters in the route definition like so:
+
+```
+const routes = {
+  "/about/:name": ({ urlInformation }) => `
+    -div()
+    --p()
+    ---"${urlInformation.params.name}"
+  `
+}
+```
+
+#### Navigating to a new route
+
+You can navigate to a new route by calling the included `go` event.
+
+```
+-button(onclick="go('/about')")
+---"About"
+```
+
+Or in an event handler:
+
+```
+"go-to-about": (_data, _render, emit) => {
+  emit("go", "/about")
+}
+```
+
 ## Development
 
 Build command: `esbuild main.js --bundle --outfile=index.js`

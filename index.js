@@ -408,8 +408,7 @@
       this.routes = routes;
       this.events = {
         ...events,
-        go: (rawPath) => {
-          const path = JSON.parse(rawPath);
+        go: (path) => {
           const removedSlash = path.startsWith("/") ? path.substring(1) : path;
           window.location.hash = `#${removedSlash}`;
         }

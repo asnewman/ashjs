@@ -2,7 +2,7 @@
 
 ## Introduction
 
-ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications.
+ash.js is my experimental frontend framework, which I use to build my personal projects. You can see it in action in the [Phonetic GitHub repo](https://github.com/asnewman/phonetic) or the [JayKay Github repo](https://github.com/asnewman/jaykay). It is an extremely lightweight SPA framework for small frontend web apps that focuses on allowing you to build quickly without needing to learn/fight complicated JS frameworks made for large-scale applications.
 
 Core concepts that I am trying to solve/experiment with:
 
